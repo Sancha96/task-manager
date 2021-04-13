@@ -1,12 +1,30 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
+
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
+
+import { store, persistor } from "./store";
+import {logout} from "./store/auth/slice";
+
+import { configAxios } from "./utils/axios";
+
 import App from './App';
+
 import reportWebVitals from './reportWebVitals';
+
+import "./styles/reset.scss";
+import './index.css';
+
+configAxios(() => store.dispatch(logout()), store);
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+      <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+              <App />
+          </PersistGate>
+      </Provider>
   </React.StrictMode>,
   document.getElementById('root')
 );

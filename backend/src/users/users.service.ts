@@ -1,45 +1,40 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
-
-export type User = any;
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { InjectModel } from '@nestjs/sequelize';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @Inject('USERS_REPOSITORY') private usersRepository: typeof User,
-  ) {}
-
-  private readonly users = [
-    {
-      userId: 1,
-      username: 'john',
-      password: 'changeme',
-    },
-    {
-      userId: 2,
-      username: 'maria',
-      password: 'guess',
-    },
-  ];
+  constructor(@InjectModel(User) private readonly userModel: typeof User) {}
 
   async findAll(): Promise<User[]> {
-    return this.usersRepository.findAll<User>();
+    return await this.userModel.findAll<User>();
   }
 
   async findOne(username: string): Promise<User | undefined> {
-    return this.usersRepository.findAll<User>();
-    return this.users.find((user) => user.username === username);
+    return await this.userModel.findOne({
+      where: { email: username },
+    });
   }
 
-  async create(user: User): Promise<number | undefined> {
-    const userId = user[user.length - 1].userId + 1;
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    // Возможно, как-то можно обойтись без переприсваивания каждого свойства,
+    // но компилятор ругается, что в CreateUserDto перечислены не все свойства модели User
+    // Наследоваться в CreateUserDto от User тоже поди неправильно
+    const user = new User();
+    user.username = createUserDto.username;
+    user.password = createUserDto.password;
 
-    this.users.push({ ...user, userId });
-
-    return userId;
+    return user.save();
   }
 
-  async remove(uuid: string): Promise<void> {
-    // await this.users.delete(uuid);
+  async update(updateUserDto: UpdateUserDto) {
+    // аналогичная ситуация с UpdateUserDto
+    // return await this.userModel.update(updateUserDto);
   }
+
+  // async remove(id: string): Promise<void> {
+  //   // await this.usersRepository.remove(+id);
+  // }
 }
