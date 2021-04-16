@@ -16,6 +16,7 @@ import Layout from "./layouts/Dashboard";
 import Login from './pages/auth/SignIn';
 import Profile from './pages/Profile';
 import Projects from "./pages/Projects";
+import Tasks from "./pages/Tasks";
 
 import {Routes as URLs} from "./constants/links";
 
@@ -33,13 +34,9 @@ const PrivateRoute = ({ component: Component, ...rest }: any) => {
         <Route
             {...rest}
             render={(props: any) =>
-                isAuth ? (
-                    <Layout>
+                <Layout>
                         <Component {...props} />
                     </Layout>
-                ) : (
-                    <Redirect to={{ pathname: URLs.Login }} />
-                )
             }
         />
     );
@@ -52,6 +49,7 @@ const Routes = () => {
             <Route exact path={URLs.Login} component={Login} />
             <PrivateRoute path={URLs.Profile} component={Profile} />
             <PrivateRoute path={URLs.Projects} component={Projects} />
+            <PrivateRoute path={URLs.Tasks} component={Tasks} />
         </Switch>
     </Router>
 }

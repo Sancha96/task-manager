@@ -16,7 +16,7 @@ export class Course extends Model<Course> {
   name: string;
 
   @HasMany(() => Teacher)
-  teachers: number;
+  teachers: Teacher[];
 
   @HasMany(() => Person)
   persons: Person[];

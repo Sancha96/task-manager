@@ -23,7 +23,7 @@ export class UsersService {
     // но компилятор ругается, что в CreateUserDto перечислены не все свойства модели User
     // Наследоваться в CreateUserDto от User тоже поди неправильно
     const user = new User();
-    user.username = createUserDto.username;
+    user.email = createUserDto.email;
     user.password = createUserDto.password;
 
     return user.save();

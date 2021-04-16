@@ -7,14 +7,14 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { Project } from './project.entity';
 import { Person } from '../../persons/entities/person.entity';
-import { Task } from 'src/tasks/entities/task.entity';
 
 @Table
-export class TaskPerson extends Model {
-  @ForeignKey(() => Task)
+export class ProjectPerson extends Model {
+  @ForeignKey(() => Project)
   @Column
-  taskId: number;
+  projectId: number;
 
   @ForeignKey(() => Person)
   @Column

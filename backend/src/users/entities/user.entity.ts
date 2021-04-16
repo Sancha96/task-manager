@@ -21,13 +21,13 @@ export class User extends Model<User> {
   password: string;
 
   @CreatedAt
-  creationDate: Date;
+  createdAt: Date;
 
   @UpdatedAt
-  updatedOn: Date;
+  updatedAt: Date;
 
   @DeletedAt
-  deletionDate: Date;
+  deletedAt: Date;
 
   @HasOne(() => Person)
   person: Person;

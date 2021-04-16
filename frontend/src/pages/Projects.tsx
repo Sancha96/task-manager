@@ -1,6 +1,6 @@
 import React, {useEffect} from "react";
 import styled from "styled-components/macro";
-import { NavLink } from "react-router-dom";
+import { NavLink, useHistory } from "react-router-dom";
 
 import {
     Avatar,
@@ -69,6 +69,7 @@ const Project: React.FC<ProjectPropsType> = ({
                                                  description,
                                                  chip,
                                              }) => {
+    const history = useHistory();
     return (
         <Card mb={6}>
             {image ? <CardMedia image={image} title="Contemplative Reptile" /> : null}
@@ -93,7 +94,7 @@ const Project: React.FC<ProjectPropsType> = ({
                 {/*<Button size="small" color="primary">*/}
                 {/*    Share*/}
                 {/*</Button>*/}
-                <Button size="small" color="primary">
+                <Button size="small" color="primary" onClick={() => history.push("/tasks")}>
                     Подробнее
                 </Button>
             </CardActions>

@@ -8,6 +8,8 @@ import { ProjectsModule } from './projects/projects.module';
 import { PersonsModule } from './persons/persons.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { CoursesModule } from './courses/courses.module';
+import { TasksModule } from './tasks/tasks.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { CoursesModule } from './courses/courses.module';
     PersonsModule,
     TeachersModule,
     CoursesModule,
+    TasksModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [],
