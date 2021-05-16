@@ -1,35 +1,36 @@
+import { Person } from '../../persons/entities/person.entity';
 import {
   Column,
-  Table,
-  Model,
-  BelongsToMany,
-  CreatedAt,
-  UpdatedAt,
-  DeletedAt,
-} from 'sequelize-typescript';
-import { Person } from '../../persons/entities/person.entity';
-import { ProjectPerson } from './project-person.entity';
+  Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
+import { Type } from 'class-transformer';
+import { Task } from '../../tasks/entities/task.entity';
 
-@Table
-export class Project extends Model<Project> {
-  @Column
+@Entity('projects')
+export class Project {
+  @PrimaryColumn({ type: 'uuid', generated: 'uuid' })
+  uuid: string;
+
+  @Column()
   title: string;
 
-  @Column
+  @Column()
   description: string;
 
-  @Column
+  @Column({ default: 'backLog' })
   status: string;
 
-  @CreatedAt
-  creationDate: Date;
-
-  @UpdatedAt
-  updatedOn: Date;
-
-  @DeletedAt
-  deletionDate: Date;
-
-  @BelongsToMany(() => Person, () => ProjectPerson)
+  @Type(() => Person)
+  @ManyToMany(() => Person, (person) => person.projects)
+  @JoinTable()
   persons: Person[];
+
+  @Type(() => Task)
+  @OneToMany(() => Task, (task) => task.project)
+  @JoinTable()
+  tasks: Task;
 }

@@ -26,6 +26,7 @@ import {Routes} from "../constants/links";
 
 // Auth components
 const SignIn = async(() => import("../pages/auth/SignIn"));
+const SignUp = async(() => import("../pages/auth/SignUp"));
 
 // Components components
 // const Alerts = async(() => import("../components/Alerts"));

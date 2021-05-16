@@ -13,9 +13,11 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from "../../store";
-import { useHistory } from 'react-router-dom';
+import {NavLink, useHistory} from 'react-router-dom';
 import {login} from "../../store/auth/slice";
 import {Routes} from "../../constants/links";
+import {register} from "../../store/user/slice";
+import {Link} from "@material-ui/core";
 
 function Copyright() {
     return (
@@ -147,6 +149,14 @@ const SignIn: FC = () => {
                                     className={classes.submit}
                                 >
                                     Войти
+                                </Button>
+                                <Button
+                                    fullWidth
+                                    variant="contained"
+                                    className={classes.submit}
+                                    onClick={() => history.push(Routes.Register)}
+                                >
+                                    Зарегистрироваться
                                 </Button>
                                 <Box mt={5}>
                                     <Copyright />

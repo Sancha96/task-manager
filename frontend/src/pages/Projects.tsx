@@ -3,7 +3,7 @@ import styled from "styled-components/macro";
 import { NavLink, useHistory } from "react-router-dom";
 
 import {
-    Avatar,
+    Avatar, Box,
     Breadcrumbs as MuiBreadcrumbs,
     Button,
     Card as MuiCard,
@@ -24,6 +24,7 @@ import { green, orange } from "@material-ui/core/colors";
 import { spacing, SpacingProps } from "@material-ui/system";
 import {useDispatch} from "react-redux";
 import {getProjects} from "../store/project/slice";
+import {Routes} from "../constants/links";
 
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 
@@ -64,11 +65,11 @@ type ProjectPropsType = {
     chip: JSX.Element;
 };
 const Project: React.FC<ProjectPropsType> = ({
-                                                 image,
-                                                 title,
-                                                 description,
-                                                 chip,
-                                             }) => {
+    image,
+    title,
+    description,
+    chip,
+}) => {
     const history = useHistory();
     return (
         <Card mb={6}>
@@ -91,9 +92,6 @@ const Project: React.FC<ProjectPropsType> = ({
                 </AvatarGroup>
             </CardContent>
             <CardActions>
-                {/*<Button size="small" color="primary">*/}
-                {/*    Share*/}
-                {/*</Button>*/}
                 <Button size="small" color="primary" onClick={() => history.push("/tasks")}>
                     Подробнее
                 </Button>
@@ -114,9 +112,12 @@ function Projects() {
 
     return (
         <>
-            <Typography variant="h3" gutterBottom display="inline">
-                Проекты
-            </Typography>
+            <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Typography variant="h3" gutterBottom display="inline">
+                    Проекты
+                </Typography>
+                <Link component={NavLink} exact to={Routes.ProjectsCreate}>Создать</Link>
+            </Box>
 
             <Breadcrumbs aria-label="Breadcrumb" mt={2}>
                 <Link component={NavLink} exact to="/">
@@ -133,7 +134,6 @@ function Projects() {
                         title="Формирование индивидуальной образовательной траектории при изменениии направления обучения"
                         description="Повседневная практика показывает, что дальнейшее развитие различных форм деятельности влечет за собой процесс внедрения и модернизации направлений прогрессивного развития. Не следует, однако забывать, что укрепление и развитие структуры представляет собой интересный эксперимент проверки модели развития."
                         chip={<Chip label="Завершен" rgbcolor={green[500]} />}
-                        // image="https://source.unsplash.com/random"
                     />
                 </Grid>
                 <Grid item xs={12} lg={6} xl={3}>
@@ -141,7 +141,6 @@ function Projects() {
                         title="Онлайн тайм-трекинг для учета этапов выполнения индивидуальных и групповых проектов"
                         description="Не следует, однако забывать, что сложившаяся структура организации требуют определения и уточнения соответствующий условий активизации. Значимость этих проблем настолько очевидна, что дальнейшее развитие различных форм деятельности способствует подготовки и реализации существенных финансовых и административных условий."
                         chip={<Chip label="В процессе" rgbcolor={orange[500]} />}
-                        // image="https://source.unsplash.com/random"
                     />
                 </Grid>
             </Grid>

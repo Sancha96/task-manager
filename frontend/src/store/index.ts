@@ -9,6 +9,7 @@ import storage from "redux-persist/lib/storage";
 import { ThunkAction } from "redux-thunk";
 import authSlice from "./auth/slice";
 import projectSlice from "./project/slice";
+import personSlice from "./person/slice";
 
 const persistConfig = {
     key: "root",
@@ -20,6 +21,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
     auth: authSlice,
     project: projectSlice,
+    person: personSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

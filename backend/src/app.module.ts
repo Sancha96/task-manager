@@ -1,6 +1,5 @@
 import { ConfigModule } from '@nestjs/config';
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
@@ -9,11 +8,10 @@ import { PersonsModule } from './persons/persons.module';
 import { TeachersModule } from './teachers/teachers.module';
 import { CoursesModule } from './courses/courses.module';
 import { TasksModule } from './tasks/tasks.module';
-import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
     UsersModule,
     AuthModule,
@@ -22,9 +20,8 @@ import { CommentsModule } from './comments/comments.module';
     TeachersModule,
     CoursesModule,
     TasksModule,
-    CommentsModule,
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [],
 })
 export class AppModule {}

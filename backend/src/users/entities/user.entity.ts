@@ -1,34 +1,58 @@
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
-  Table,
-  Model,
-  HasOne,
-  CreatedAt,
-  UpdatedAt,
-  DeletedAt,
-} from 'sequelize-typescript';
-import { Person } from '../../persons/entities/person.entity';
+  Entity,
+  JoinTable,
+  OneToMany,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
+import { Exclude, Type } from 'class-transformer';
 
-@Table
-export class User extends Model<User> {
-  @Column({ unique: true })
-  username: string;
+import * as bcrypt from 'bcrypt';
+
+import { RefreshToken } from '../../auth/entities/refreshtoken.entity';
+import { Person } from '../../persons/entities/person.entity';
+import {Role} from "../../common/roles/role.enum";
+
+@Entity('users')
+export class User {
+  @PrimaryColumn({ type: 'uuid', generated: 'uuid' })
+  uuid: string;
 
   @Column({ unique: true })
   email: string;
 
-  @Column
+  @Column({ unique: true })
+  username: string;
+
+  @Column()
+  @Exclude()
   password: string;
 
-  @CreatedAt
-  createdAt: Date;
+  @Column({ default: Role.Admin })
+  roles: number;
 
-  @UpdatedAt
-  updatedAt: Date;
+  @OneToMany(
+    () => RefreshToken,
+    (refreshToken: RefreshToken) => refreshToken.user,
+  )
+  refreshTokens: RefreshToken[];
 
-  @DeletedAt
-  deletedAt: Date;
+  @BeforeInsert()
+  @BeforeUpdate()
+  async hashPassword() {
+    if (this.password) {
+      this.password = await bcrypt.hash(this.password, 12);
+    }
+  }
 
-  @HasOne(() => Person)
-  person: Person;
+  async comparePassword(attempt: string): Promise<boolean> {
+    return await bcrypt.compare(attempt, this.password);
+  }
+
+  constructor(partial?: Partial<User>) {
+    Object.assign(this, partial);
+  }
 }

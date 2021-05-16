@@ -1,40 +1,52 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectModel } from '@nestjs/sequelize';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { LoginUserDto } from '../auth/dto/login-user.dto';
+import { PaginationParams } from '../common/pagination/pagination-params';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User) private readonly userModel: typeof User) {}
-
-  async findAll(): Promise<User[]> {
-    return await this.userModel.findAll<User>();
-  }
-
-  async findOne(username: string): Promise<User | undefined> {
-    return await this.userModel.findOne({
-      where: { email: username },
-    });
-  }
+  constructor(
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    // Возможно, как-то можно обойтись без переприсваивания каждого свойства,
-    // но компилятор ругается, что в CreateUserDto перечислены не все свойства модели User
-    // Наследоваться в CreateUserDto от User тоже поди неправильно
-    const user = new User();
-    user.email = createUserDto.email;
-    user.password = createUserDto.password;
+    const user = this.usersRepository.create(createUserDto);
 
-    return user.save();
+    return await this.usersRepository.save(user);
   }
 
-  async update(updateUserDto: UpdateUserDto) {
-    // аналогичная ситуация с UpdateUserDto
-    // return await this.userModel.update(updateUserDto);
+  findAndCount(paginationParams: PaginationParams): Promise<[User[], number]> {
+    return this.usersRepository.findAndCount({ ...paginationParams });
   }
 
-  // async remove(id: string): Promise<void> {
-  //   // await this.usersRepository.remove(+id);
-  // }
+  async findOne(uuid: string): Promise<User> {
+    const user = await this.usersRepository.findOne(uuid);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
+  }
+
+  async update(uuid: string, updateUserDto: UpdateUserDto) {
+    await this.usersRepository.update(uuid, updateUserDto);
+
+    return this.findOne(uuid);
+  }
+
+  async remove(uuid: string): Promise<void> {
+    await this.usersRepository.delete(uuid);
+  }
+
+  async login(loginUserDto: LoginUserDto): Promise<User> {
+    return await this.usersRepository.findOne({
+      username: loginUserDto.username,
+    });
+  }
 }

@@ -1,38 +1,97 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  ClassSerializerInterceptor,
+  Controller,
   Delete,
+  Get, Inject,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Query,
+  UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common';
+
+import { classToClass } from 'class-transformer';
+
+import { PaginationParams } from '../common/pagination/pagination-params';
+import { PaginationRo } from '../common/pagination/pagination-ro';
+import { Role } from '../common/roles/role.enum';
+
 import { UsersService } from './users.service';
+
+import { Users } from './users.decorator';
+import { Auth } from '../auth/auth.decorator';
+
+import { CreateUsersGuard } from './guards/create-users.guard';
+import { DeleteUsersGuard } from './guards/delete-users.guard';
+import { GetUserGuard } from './guards/get-user.guard';
+import { UpdateUsersGuard } from './guards/update-users.guard';
+
+import { UserRoDto } from './dto/user-ro.dto';
+
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+import { PersonsService } from '../persons/persons.service';
 
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly personsService: PersonsService,
+  ) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.usersService.create(createUserDto);
+  // @Users(CreateUsersGuard)
+  // TODO: сделать транзакцию
+  async create(@Body(new ValidationPipe()) createUserDto: CreateUserDto) {
+    const { username, email, password, ...otherFields } = createUserDto;
+    const user = await this.usersService.create({ username, email, password });
+    console.log(user, user.uuid)
+    await this.personsService.create({
+      userUuid: user.uuid,
+      ...otherFields,
+    });
+    return user;
   }
 
-  @Get(':username')
-  findOne(@Param('username') username: string): Promise<User> {
-    return this.usersService.findOne(username);
+  @Get()
+  @Auth(Role.Admin)
+  async findAndCount(
+    @Query(
+      new ValidationPipe({
+        transform: true,
+      }),
+    )
+    paginationParams: PaginationParams,
+  ): Promise<PaginationRo<UserRoDto>> {
+    const [data, count] = await this.usersService.findAndCount(
+      paginationParams,
+    );
+
+    return { data: classToClass(data), count };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    // return this.usersService.update(+id, updateUserDto);
+  @Get(':uuid')
+  @Users(GetUserGuard)
+  findOne(@Param('uuid', ParseUUIDPipe) uuid: string) {
+    return this.usersService.findOne(uuid);
   }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.usersService.remove(+id);
-  // }
+  @Patch(':uuid')
+  @Users(UpdateUsersGuard)
+  update(
+    @Param('uuid', ParseUUIDPipe) uuid: string,
+    @Body(new ValidationPipe()) updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(uuid, updateUserDto);
+  }
+
+  @Delete(':uuid')
+  @Users(DeleteUsersGuard)
+  remove(@Param('uuid', ParseUUIDPipe) uuid: string) {
+    return this.usersService.remove(uuid);
+  }
 }

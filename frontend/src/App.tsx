@@ -14,6 +14,7 @@ import { RootState } from './store';
 import Layout from "./layouts/Dashboard";
 
 import Login from './pages/auth/SignIn';
+import Register from './pages/auth/SignUp';
 import Profile from './pages/Profile';
 import Projects from "./pages/Projects";
 import Tasks from "./pages/Tasks";
@@ -24,6 +25,7 @@ import createTheme from "./theme";
 
 import './App.module.scss';
 import {THEMES} from "./constants/themes";
+import ProjectsCreate from "./pages/ProjectsCreate";
 
 const PrivateRoute = ({ component: Component, ...rest }: any) => {
     const data = useSelector((state: RootState) => state.auth.data);
@@ -47,8 +49,10 @@ const Routes = () => {
     return <Router>
         <Switch>
             <Route exact path={URLs.Login} component={Login} />
+            <Route exact path={URLs.Register} component={Register} />
             <PrivateRoute path={URLs.Profile} component={Profile} />
-            <PrivateRoute path={URLs.Projects} component={Projects} />
+            <PrivateRoute exact path={URLs.Projects} component={Projects} />
+            <PrivateRoute path={URLs.ProjectsCreate} component={ProjectsCreate} />
             <PrivateRoute path={URLs.Tasks} component={Tasks} />
         </Switch>
     </Router>

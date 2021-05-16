@@ -1,4 +1,3 @@
-import axios from "axios";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppThunk } from "../index";
 import {AuthState, DataType} from "./interfaces";
@@ -35,13 +34,13 @@ export const {
     changeError,
 } = authSlice.actions;
 
-export const login = (username: string, password: string): AppThunk => async (
+export const login = (email: string, password: string): AppThunk => async (
     dispatch
 ) => {
     dispatch(changeIsLoading(true));
 
     try {
-        const { data } = await API.login({username, password});
+        const { data } = await API.login({email, username: email.split("@")[0], password});
 
         dispatch(setData(data));
         dispatch(changeError(""));

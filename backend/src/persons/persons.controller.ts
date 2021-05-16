@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { PersonsService } from './persons.service';
 import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
@@ -13,8 +13,8 @@ export class PersonsController {
   }
 
   @Get()
-  findAll() {
-    return this.personsService.findAll();
+  findAll(@Query('type') type) {
+    return this.personsService.findAll(type);
   }
 
   @Get(':id')

@@ -36,16 +36,32 @@ export const {
 export const getProjects = (): AppThunk => async (
     dispatch
 ) => {
-    // dispatch(changeIsLoading(true));
+    dispatch(changeIsLoading(true));
 
     try {
         const { data } = await API.getList();
 
-        // dispatch(setData(data));
-        // dispatch(changeError(""));
-        // dispatch(changeIsLoading(false));
+        dispatch(setData(data));
+        dispatch(changeError(""));
+        dispatch(changeIsLoading(false));
     } catch (e) {
-        // dispatch(changeError("Ошибка получения данных"));
-        // dispatch(changeIsLoading(false));
+        dispatch(changeError("Ошибка получения данных"));
+        dispatch(changeIsLoading(false));
+    }
+};
+
+export const createProject = (body: any): AppThunk => async (
+    dispatch
+) => {
+    dispatch(changeIsLoading(true));
+
+    try {
+        await API.create(body);
+
+        dispatch(changeError(""));
+        dispatch(changeIsLoading(false));
+    } catch (e) {
+        dispatch(changeError("Ошибка получения данных"));
+        dispatch(changeIsLoading(false));
     }
 };

@@ -1,55 +1,44 @@
-import {
-    Column,
-    Table,
-    Model,
-    HasOne,
-    HasMany,
-    CreatedAt,
-    UpdatedAt,
-    DeletedAt,
-    BelongsToMany,
-  } from 'sequelize-typescript';
-import { TaskPerson } from 'src/projects/entities/project-person.entity';
 import { Project } from 'src/projects/entities/project.entity';
 import { Person } from '../../persons/entities/person.entity';
-import { Comment } from '../../comments/entities/comment.entity';
-  
-  @Table
-  export class Task extends Model<Task> {
-    @Column
-    title: string;
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  PrimaryColumn,
+} from 'typeorm';
+import { Type } from 'class-transformer';
 
-    @Column
-    description: string;
+@Entity('tasks')
+export class Task {
+  @PrimaryColumn({ type: 'uuid' })
+  uuid: string;
 
-    @Column
-    complexity: number;
+  @Column()
+  title: string;
 
-    @Column
-    estimatedTime: Date;
+  @Column()
+  description: string;
 
-    @Column
-    actualTime: Date;
+  @Column()
+  complexity: number;
 
-    @Column
-    status: string;
+  @Column()
+  estimatedTime: Date;
 
-    @BelongsToMany(() => Person, () => TaskPerson)
-    executors: Person[];
+  @Column()
+  actualTime: Date;
 
-    @HasOne(() => Project)
-    project: Project;
+  @Column()
+  status: string;
 
-    @HasMany(() => Comment)
-    comments: Comment[];
-  
-    @CreatedAt
-    createdAt: Date;
-  
-    @UpdatedAt
-    updatedAt: Date;
-  
-    @DeletedAt
-    deletedAt: Date;
-  }
-  
+  @ManyToMany(() => Person, (person) => person.tasks)
+  @JoinTable()
+  executors: Person[];
+
+  @Type(() => Project)
+  @ManyToOne(() => Project, (project) => project.tasks)
+  @JoinTable()
+  project: Project;
+}

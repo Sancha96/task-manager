@@ -1,37 +1,29 @@
-import {
-  Table,
-  Model,
-  CreatedAt,
-  UpdatedAt,
-  DeletedAt,
-  HasMany,
-  Column,
-  ForeignKey,
-  BelongsTo,
-} from 'sequelize-typescript';
 import { Person } from '../../persons/entities/person.entity';
 import { Course } from '../../courses/entities/course.entity';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  OneToMany,
+  PrimaryColumn,
+} from 'typeorm';
+import { Type } from 'class-transformer';
 
-@Table
-export class Teacher extends Model<Teacher> {
-  @Column
+@Entity('teachers')
+export class Teacher {
+  @PrimaryColumn({ type: 'uuid' })
+  uuid: string;
+
+  @Column()
   name: string;
 
-  @ForeignKey(() => Course)
-  courseId: number;
+  @Column({ type: 'uuid' })
+  courseUuid: string;
 
-  @BelongsTo(() => Course)
-  course: Course;
-
-  @HasMany(() => Person)
-  persons: Person[];
-
-  @CreatedAt
-  creationDate: Date;
-
-  @UpdatedAt
-  updatedOn: Date;
-
-  @DeletedAt
-  deletionDate: Date;
+  @ManyToMany(() => Course, (course) => course.teachers, {
+    nullable: true,
+  })
+  @JoinTable()
+  courses?: Course;
 }

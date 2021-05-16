@@ -1,27 +1,29 @@
 import { Module } from '@nestjs/common';
-import { SequelizeModule } from '@nestjs/sequelize';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { User } from '../users/entities/user.entity';
-import { Project } from '../projects/entities/project.entity';
-import { Person } from '../persons/entities/person.entity';
-import { ProjectPerson } from '../projects/entities/project-person.entity';
-import { Teacher } from '../teachers/entities/teacher.entity';
-import { Course } from '../courses/entities/course.entity';
+
+import { join } from 'path';
 
 @Module({
   imports: [
-    SequelizeModule.forRootAsync({
+    TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => {
+      useFactory: (configService: ConfigService) => {
+        const isDev = configService.get('NODE_ENV', 'development');
         return {
-          dialect: 'postgres',
-          host: config.get('DB_HOST'),
-          port: +config.get<number>('DB_PORT'),
-          username: config.get('DB_USERNAME'),
-          password: config.get('DB_PASSWORD'),
-          database: config.get<string>('DB_DATABASE'),
-          models: [User, Project, Person, ProjectPerson, Teacher, Course],
-          synchronize: false,
+          type: configService.get<string>('DB_DIALECT', 'postgres') as any,
+          host: configService.get('DB_HOST'),
+          port: +configService.get<number>('DB_PORT'),
+          username: configService.get('DB_USERNAME'),
+          password: configService.get('DB_PASSWORD'),
+          database: configService.get<string>('DB_DATABASE'),
+          entities: [join(__dirname, '..', '**', '*.entity.{ts,js}')],
+          migrationsRun: true,
+          cli: {
+            migrationsDir: `/${isDev ? 'src' : 'dist'}/migrations`,
+          },
+          synchronize: true,
+          keepConnectionAlive: isDev,
         };
       },
       inject: [ConfigService],

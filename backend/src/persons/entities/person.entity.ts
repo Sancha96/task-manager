@@ -1,67 +1,56 @@
-import {
-  BelongsTo,
-  BelongsToMany,
-  Column,
-  CreatedAt,
-  DeletedAt,
-  ForeignKey,
-  Model,
-  Table,
-  UpdatedAt,
-} from 'sequelize-typescript';
 import { Project } from '../../projects/entities/project.entity';
-import { ProjectPerson } from '../../projects/entities/project-person.entity';
 import { User } from '../../users/entities/user.entity';
-import { Teacher } from '../../teachers/entities/teacher.entity';
 import { Course } from '../../courses/entities/course.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
+import { Task } from 'src/tasks/entities/task.entity';
 
-@Table
-export class Person extends Model<Person> {
-  @Column
+@Entity('persons')
+export class Person {
+  @PrimaryColumn({ type: 'uuid', generated: 'uuid' })
+  uuid: string;
+
+  @Column({ default: 'test' })
   firstName: string;
 
-  @Column
+  @Column({ default: 'test' })
   lastName: string;
 
-  @Column
+  @Column({ nullable: true })
   surName: string;
 
-  @Column
+  @Column({ nullable: true })
   gender: string;
 
-  @Column
+  @Column({ nullable: true })
   birthDate: Date;
 
-  @CreatedAt
-  creationDate: Date;
+  @Column({ nullable: true })
+  type: string;
 
-  @UpdatedAt
-  updatedOn: Date;
-
-  @DeletedAt
-  deletionDate: Date;
-
-  @ForeignKey(() => User)
-  @Column
-  userId: number;
-
-  @BelongsTo(() => User)
+  @OneToOne(() => User)
+  @JoinColumn()
   user: User;
 
-  @ForeignKey(() => Teacher)
-  @Column
-  teacherId: number;
+  @ManyToOne(() => Course, (course) => course.persons, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  course?: Course;
 
-  @BelongsTo(() => Teacher)
-  teacher: Teacher;
+  @ManyToMany(() => Project, (project) => project.persons)
+  @JoinTable()
+  projects?: Project[];
 
-  @ForeignKey(() => Course)
-  @Column
-  courseId: number;
-
-  @BelongsTo(() => Course)
-  course: Course;
-
-  @BelongsToMany(() => Project, () => ProjectPerson)
-  projects: Project[];
+  @ManyToMany(() => Task, (task) => task.executors)
+  @JoinTable()
+  tasks?: Task[];
 }
