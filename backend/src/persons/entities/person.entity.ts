@@ -46,10 +46,6 @@ export class Person {
   })
   course?: Course;
 
-  @ManyToMany(() => Project, (project) => project.persons)
-  @JoinTable()
-  projects?: Project[];
-
   @ManyToMany(() => Task, (task) => task.executors)
   @JoinTable()
   tasks?: Task[];

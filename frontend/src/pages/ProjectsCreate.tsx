@@ -35,6 +35,7 @@ interface TypographyPropsType extends SpacingProps {
 const Typography = styled(MuiTypography)<TypographyPropsType>(spacing);
 
 function ProjectsCreate() {
+    const history = useHistory();
     const dispatch = useDispatch();
     const students = useSelector((state: RootState) => state.person.students)
     const getData = () => {
@@ -81,6 +82,7 @@ function ProjectsCreate() {
                     onSubmit={async (values) => {
                         console.log(values)
                         await dispatch(createProject(values));
+                        history.push(Routes.Projects)
                     }}
                 >
                     {({ errors, handleChange, handleSubmit, touched, values }) => (

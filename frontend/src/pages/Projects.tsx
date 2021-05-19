@@ -19,12 +19,14 @@ import {
 
 import { AvatarGroup as MuiAvatarGroup } from "@material-ui/lab";
 
-import { green, orange } from "@material-ui/core/colors";
+import { green, orange, grey } from "@material-ui/core/colors";
 
 import { spacing, SpacingProps } from "@material-ui/system";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {getProjects} from "../store/project/slice";
 import {Routes} from "../constants/links";
+import {RootState} from "../store";
+import {stat} from "fs";
 
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 
@@ -63,6 +65,7 @@ type ProjectPropsType = {
     title: string;
     description: string;
     chip: JSX.Element;
+    persons: string[]
 };
 const Project: React.FC<ProjectPropsType> = ({
     image,
@@ -100,8 +103,16 @@ const Project: React.FC<ProjectPropsType> = ({
     );
 };
 
+const getChip: any = (status: any) => (
+    status === "done" ? <Chip label="Завершен" rgbcolor={green[500]} /> :
+        status.toLowerCase() === "backlog" ? <Chip label="Создан" rgbcolor={grey[500]} /> :
+            <Chip label="В процессе" rgbcolor={orange[500]} />
+)
+
 function Projects() {
     const dispatch = useDispatch();
+    const projects = useSelector((state: RootState) => state.project.data);
+
     const getData = () => {
         dispatch(getProjects())
     }
@@ -129,20 +140,18 @@ function Projects() {
             <Divider my={6} />
 
             <Grid container spacing={6}>
-                <Grid item xs={12} lg={6} xl={3}>
-                    <Project
-                        title="Формирование индивидуальной образовательной траектории при изменениии направления обучения"
-                        description="Повседневная практика показывает, что дальнейшее развитие различных форм деятельности влечет за собой процесс внедрения и модернизации направлений прогрессивного развития. Не следует, однако забывать, что укрепление и развитие структуры представляет собой интересный эксперимент проверки модели развития."
-                        chip={<Chip label="Завершен" rgbcolor={green[500]} />}
-                    />
-                </Grid>
-                <Grid item xs={12} lg={6} xl={3}>
-                    <Project
-                        title="Онлайн тайм-трекинг для учета этапов выполнения индивидуальных и групповых проектов"
-                        description="Не следует, однако забывать, что сложившаяся структура организации требуют определения и уточнения соответствующий условий активизации. Значимость этих проблем настолько очевидна, что дальнейшее развитие различных форм деятельности способствует подготовки и реализации существенных финансовых и административных условий."
-                        chip={<Chip label="В процессе" rgbcolor={orange[500]} />}
-                    />
-                </Grid>
+                {
+                    projects.map((project: any) => (
+                        <Grid item xs={12} lg={6} xl={3} key={project.uuid}>
+                            <Project
+                                title={project.title}
+                                description={project.description}
+                                persons={project.persons}
+                                chip={getChip(project.status)}
+                            />
+                        </Grid>
+                    ))
+                }
             </Grid>
         </>
     );

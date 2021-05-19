@@ -24,13 +24,7 @@ export class Project {
   @Column({ default: 'backLog' })
   status: string;
 
-  @Type(() => Person)
-  @ManyToMany(() => Person, (person) => person.projects)
+  @ManyToMany(() => Person)
   @JoinTable()
   persons: Person[];
-
-  @Type(() => Task)
-  @OneToMany(() => Task, (task) => task.project)
-  @JoinTable()
-  tasks: Task;
 }

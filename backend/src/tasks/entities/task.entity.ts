@@ -37,8 +37,8 @@ export class Task {
   @JoinTable()
   executors: Person[];
 
-  @Type(() => Project)
-  @ManyToOne(() => Project, (project) => project.tasks)
-  @JoinTable()
-  project: Project;
+  // @Type(() => Project)
+  // @ManyToOne(() => Project, (project) => project.tasks)
+  // @JoinTable()
+  // project: Project;
 }
