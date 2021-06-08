@@ -1,10 +1,10 @@
-import React, { useState } from "react";
-import styled, { createGlobalStyle } from "styled-components/macro";
+import React, {useEffect, useState} from "react";
+import styled, {createGlobalStyle} from "styled-components/macro";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/AppBar";
 import Footer from "../components/Footer";
 
-import { spacing } from "@material-ui/system";
+import {spacing} from "@material-ui/system";
 import {
     Hidden,
     CssBaseline,
@@ -12,7 +12,13 @@ import {
     withWidth,
 } from "@material-ui/core";
 
-import { isWidthUp } from "@material-ui/core/withWidth";
+import {isWidthUp} from "@material-ui/core/withWidth";
+import {getProjects} from "../store/project/slice";
+import {useDispatch, useSelector} from "react-redux";
+import {RootState} from "../store";
+
+import { sidebarRoutes as routes } from "../routes/index";
+import {getPersonByUserId} from "../store/user/slice";
 
 const drawerWidth = 258;
 
@@ -67,31 +73,56 @@ const MainContent = styled(Paper)`
   }
 `;
 
-type DashboardPropsType = {
-    routes: Array<any>;
-    width: "md" | "xs" | "sm" | "lg" | "xl";
-};
-
 const Dashboard: React.FC<any> = ({
-                                                     children,
-                                                     routes,
-                                                     width,
-                                                 }) => {
+  children,
+  width,
+}) => {
+    const dispatch = useDispatch();
+    const projects = useSelector((state: RootState) => state.project.data);
+    const user: any = useSelector((state: RootState) => state.user.data);
+    const auth: any = useSelector((state: RootState) => state.auth.data);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const [_routes, setRoutes] = useState<any[]>(routes);
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
     };
 
+    const getData = async () => {
+        await dispatch(getPersonByUserId(auth.uuid));
+    }
+
+    useEffect(() => {
+        if (user?.person?.uuid) {
+            dispatch(getProjects(user.person.type === "student" ? {
+                executor: user.person.uuid
+            } : {
+                teacher: user.person.uuid
+            }));
+        }
+    }, [user?.person?.uuid])
+
+    useEffect(() => {
+        getData();
+    }, []);
+
+    useEffect(() => {
+        const newRoutes = [..._routes];
+        const targetRoute: any = newRoutes.find(_route => _route.id === "Проекты");
+        if (targetRoute) targetRoute.badge = projects.length;
+
+        setRoutes(newRoutes);
+    }, [projects])
+
     return (
         <Root>
-            <CssBaseline />
-            <GlobalStyle />
+            <CssBaseline/>
+            <GlobalStyle/>
             <Drawer>
                 <Hidden mdUp implementation="js">
                     <Sidebar
-                        routes={routes}
-                        PaperProps={{ style: { width: drawerWidth } }}
+                        routes={_routes}
+                        PaperProps={{style: {width: drawerWidth}}}
                         variant="temporary"
                         open={mobileOpen}
                         onClose={handleDrawerToggle}
@@ -99,17 +130,17 @@ const Dashboard: React.FC<any> = ({
                 </Hidden>
                 <Hidden smDown implementation="css">
                     <Sidebar
-                        routes={routes}
-                        PaperProps={{ style: { width: drawerWidth } }}
+                        routes={_routes}
+                        PaperProps={{style: {width: drawerWidth}}}
                     />
                 </Hidden>
             </Drawer>
             <AppContent>
-                <Header onDrawerToggle={handleDrawerToggle} />
+                <Header onDrawerToggle={handleDrawerToggle}/>
                 <MainContent p={isWidthUp("lg", width) ? 12 : 5}>
                     {children}
                 </MainContent>
-                <Footer />
+                <Footer/>
             </AppContent>
         </Root>
     );

@@ -24,8 +24,8 @@ import {
 import { ExpandLess, ExpandMore } from "@material-ui/icons";
 
 import { green } from "@material-ui/core/colors";
-
-import { sidebarRoutes as routes } from "../routes/index";
+import {useSelector} from "react-redux";
+import {RootState} from "../store";
 
 const Box = styled(MuiBox)(spacing);
 
@@ -340,8 +340,11 @@ const Sidebar: React.FC<RouteComponentProps & SidebarPropsType> = ({
   classes,
   staticContext,
   location,
+  routes,
   ...rest
 }) => {
+  const user: any = useSelector((state: RootState) => state.user.data);
+
   type tplotOptions = {
     [key: number]: boolean;
   };
@@ -448,24 +451,12 @@ const Sidebar: React.FC<RouteComponentProps & SidebarPropsType> = ({
       <SidebarFooter>
         <Grid container spacing={2}>
           <Grid item>
-            <SidebarFooterBadge
-              overlap="circle"
-              anchorOrigin={{
-                vertical: "bottom",
-                horizontal: "right",
-              }}
-              variant="dot"
-            >
-              <Avatar
-                alt="Александра Челнокова"
-                src="/static/img/avatars/avatar-1.jpg"
-              />
-            </SidebarFooterBadge>
+            <Avatar title={`${user?.person?.firstName} ${user?.person?.lastName}`}>{user?.person?.firstName[0]}{user?.person?.lastName[0]}</Avatar>
           </Grid>
           <Grid item>
-            <SidebarFooterText variant="body2">Александра Челнокова</SidebarFooterText>
+            <SidebarFooterText variant="body2">{user?.person?.firstName} {user?.person?.lastName}</SidebarFooterText>
             <SidebarFooterSubText variant="caption">
-              МОиАИС 174-1
+              {user?.person?.type === "student" ? "МОиАИС 174-1" : "Преподаватель"}
             </SidebarFooterSubText>
           </Grid>
         </Grid>

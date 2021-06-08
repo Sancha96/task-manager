@@ -13,8 +13,8 @@ export class PersonsController {
   }
 
   @Get()
-  findAll(@Query('type') type) {
-    return this.personsService.findAll(type);
+  findAll(@Query() params) {
+    return this.personsService.findAll(params);
   }
 
   @Get(':id')

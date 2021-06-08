@@ -97,17 +97,9 @@ const AppBarComponent: React.FC<AppBarProps> = ({ onDrawerToggle }) => (
               </IconButton>
             </Grid>
           </Hidden>
-          <Grid item>
-            <Search>
-              <SearchIconWrapper>
-                <SearchIcon />
-              </SearchIconWrapper>
-              <Input placeholder="Search topics" />
-            </Search>
-          </Grid>
+          <Grid item />
           <Grid item xs />
           <Grid item>
-            <NotificationsDropdown />
             <UserDropdown />
           </Grid>
         </Grid>

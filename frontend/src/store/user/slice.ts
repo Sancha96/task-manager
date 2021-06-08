@@ -40,7 +40,23 @@ export const register = (email: string, password: string): AppThunk => async (
     dispatch(changeIsLoading(true));
 
     try {
-        const { data } = await API.register({email, username: email.split("@")[0], password});
+        await API.register({email, username: email.split("@")[0], password});
+
+        dispatch(changeError(""));
+        dispatch(changeIsLoading(false));
+    } catch (e) {
+        dispatch(changeError("Ошибка входа"));
+        dispatch(changeIsLoading(false));
+    }
+};
+
+export const getPersonByUserId = (uuid: string): AppThunk => async (
+    dispatch
+) => {
+    dispatch(changeIsLoading(true));
+
+    try {
+        const { data }: any = await API.getPersonByUserId(uuid);
 
         dispatch(setData(data));
         dispatch(changeError(""));

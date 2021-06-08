@@ -23,10 +23,10 @@ import { green, orange, grey } from "@material-ui/core/colors";
 
 import { spacing, SpacingProps } from "@material-ui/system";
 import {useDispatch, useSelector} from "react-redux";
-import {getProjects} from "../store/project/slice";
 import {Routes} from "../constants/links";
 import {RootState} from "../store";
-import {stat} from "fs";
+import {getProjects} from "../store/project/slice";
+import API from "../API/project";
 
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 
@@ -34,10 +34,6 @@ const Card = styled(MuiCard)(spacing);
 
 const CardContent = styled(MuiCardContent)`
   border-bottom: 1px solid ${(props) => props.theme.palette.grey[300]};
-`;
-
-const CardMedia = styled(MuiCardMedia)`
-  height: 220px;
 `;
 
 const Divider = styled(MuiDivider)(spacing);
@@ -61,22 +57,32 @@ const AvatarGroup = styled(MuiAvatarGroup)`
 `;
 
 type ProjectPropsType = {
+    uuid: string;
     image?: string;
     title: string;
     description: string;
     chip: JSX.Element;
-    persons: string[]
+    executors: any;
+    teacher: any;
+    userType: any;
+    status: string;
 };
 const Project: React.FC<ProjectPropsType> = ({
-    image,
+    uuid,
     title,
     description,
     chip,
+    teacher,
+    executors,
+                                                 userType,
+    status,
 }) => {
     const history = useHistory();
+    const dispatch = useDispatch();
+    const user: any = useSelector((state: RootState) => state.user.data);
+
     return (
         <Card mb={6}>
-            {image ? <CardMedia image={image} title="Contemplative Reptile" /> : null}
             <CardContent>
                 <Typography gutterBottom variant="h5" component="h2">
                     {title}
@@ -88,16 +94,40 @@ const Project: React.FC<ProjectPropsType> = ({
                     {description}
                 </Typography>
 
+                <Typography mb={4} color="textSecondary" component="p">
+                    Стэк: ReactJS, NestJS, PostgreSQL
+                </Typography>
+
+                {userType === "student" && <Typography mb={4} color="textSecondary" component="p">
+                    Преподаватель: {teacher.lastName} {teacher.firstName[0]}. {teacher.surName[0]}.
+                </Typography>}
+
                 <AvatarGroup max={3}>
-                    <Avatar alt="Avatar" src="/static/img/avatars/avatar-1.jpg" />
-                    <Avatar alt="Avatar" src="/static/img/avatars/avatar-2.jpg" />
-                    <Avatar alt="Avatar" src="/static/img/avatars/avatar-3.jpg" />
+                    {executors.map((executor: any) => (<Avatar key={executor.uuid} title={`${executor.firstName} ${executor.lastName}`}>{executor.firstName[0]}{executor.lastName[0]}</Avatar>))}
                 </AvatarGroup>
             </CardContent>
             <CardActions>
-                <Button size="small" color="primary" onClick={() => history.push("/tasks")}>
+                <Button size="small" color="primary" onClick={() => history.push("/projects/" + uuid)}>
                     Подробнее
                 </Button>
+                {
+                    userType === "teacher" &&
+                        <>
+                        {status === "inProgress" && <Button size="small" color="primary" onClick={() => {
+                            API.updateProject(uuid, { status: "done" }).then(() => {
+                                if (user?.person?.uuid) {
+                                    dispatch(getProjects(user.person.type === "student" ? {
+                                        executor: user.person.uuid
+                                    } : {
+                                        teacher: user.person.uuid
+                                    }));
+                                }
+                            });
+                        }}>
+                            Завершить
+                        </Button>}
+                        </>
+                }
             </CardActions>
         </Card>
     );
@@ -111,15 +141,18 @@ const getChip: any = (status: any) => (
 
 function Projects() {
     const dispatch = useDispatch();
+    const user: any = useSelector((state: RootState) => state.user.data);
     const projects = useSelector((state: RootState) => state.project.data);
 
-    const getData = () => {
-        dispatch(getProjects())
-    }
-
     useEffect(() => {
-        getData()
-    }, [])
+        if (user?.person?.uuid) {
+            dispatch(getProjects(user.person.type === "student" ? {
+                executor: user.person.uuid
+            } : {
+                teacher: user.person.uuid
+            }));
+        }
+    }, []);
 
     return (
         <>
@@ -127,7 +160,7 @@ function Projects() {
                 <Typography variant="h3" gutterBottom display="inline">
                     Проекты
                 </Typography>
-                <Link component={NavLink} exact to={Routes.ProjectsCreate}>Создать</Link>
+                {user?.person?.type === "teacher" && <Link component={NavLink} exact to={Routes.ProjectsCreate}>Создать</Link>}
             </Box>
 
             <Breadcrumbs aria-label="Breadcrumb" mt={2}>
@@ -142,12 +175,16 @@ function Projects() {
             <Grid container spacing={6}>
                 {
                     projects.map((project: any) => (
-                        <Grid item xs={12} lg={6} xl={3} key={project.uuid}>
+                        <Grid item xs={12} lg={6} xl={4} key={project.uuid}>
                             <Project
+                                uuid={project.uuid}
                                 title={project.title}
                                 description={project.description}
-                                persons={project.persons}
+                                executors={project.executors}
+                                teacher={project.teacher}
+                                status={project.status}
                                 chip={getChip(project.status)}
+                                userType={user?.person?.type}
                             />
                         </Grid>
                     ))

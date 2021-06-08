@@ -66,7 +66,7 @@ export class TokenService {
         ipAddress,
       });
 
-      return { accessToken, refreshToken };
+      return { uuid: user.uuid, accessToken, refreshToken };
     } catch (error) {
       throw error;
     }

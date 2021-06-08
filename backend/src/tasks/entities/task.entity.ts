@@ -8,37 +8,41 @@ import {
   ManyToOne,
   PrimaryColumn,
 } from 'typeorm';
-import { Type } from 'class-transformer';
+import { Stage } from '../../stages/entities/stage.entity';
 
 @Entity('tasks')
 export class Task {
-  @PrimaryColumn({ type: 'uuid' })
+  @PrimaryColumn({ type: 'uuid', generated: 'uuid' })
   uuid: string;
 
   @Column()
   title: string;
 
-  @Column()
-  description: string;
+  @Column({ nullable: true })
+  description?: string;
 
-  @Column()
-  complexity: number;
+  @Column({ nullable: true })
+  complexity?: number;
 
-  @Column()
-  estimatedTime: Date;
+  @Column({ nullable: true })
+  estimatedTime?: Date;
 
-  @Column()
-  actualTime: Date;
+  @Column({ nullable: true })
+  actualTime?: Date;
 
-  @Column()
+  @Column({ default: 'backlog' })
   status: string;
+
+  @Column({ default: false })
+  isConfirmed: boolean;
 
   @ManyToMany(() => Person, (person) => person.tasks)
   @JoinTable()
   executors: Person[];
 
-  // @Type(() => Project)
-  // @ManyToOne(() => Project, (project) => project.tasks)
-  // @JoinTable()
-  // project: Project;
+  @ManyToOne(() => Stage)
+  stage: Stage;
+
+  @ManyToOne(() => Project)
+  project: Project;
 }

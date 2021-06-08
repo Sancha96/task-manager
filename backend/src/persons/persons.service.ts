@@ -19,11 +19,12 @@ export class PersonsService {
     return await this.personsRepository.save(person);
   }
 
-  async findAll(type) {
-    if (!type) throw new Error('Тип не передан');
-    return await this.personsRepository.find({
-      where: { type },
-    });
+  async findAll(params: any) {
+    if (params.type) {
+      return await this.personsRepository.find({
+        where: { type: params.type },
+      });
+    }
   }
 
   findOne(id: number) {

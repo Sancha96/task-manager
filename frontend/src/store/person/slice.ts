@@ -6,7 +6,7 @@ import API from "../../API/person";
 const personSlice = createSlice({
     name: "person",
     initialState: {
-        data: [],
+        data: {},
         students: [],
         isLoading: false,
         error: "",
@@ -20,6 +20,9 @@ const personSlice = createSlice({
         },
         setStudents(state, {payload}) {
             state.students = payload;
+        },
+        setTeachers(state, {payload}) {
+            state.teachers = payload;
         },
         cleanStudents(state) {
             state.students = [];
@@ -35,6 +38,7 @@ const personSlice = createSlice({
 
 export default personSlice.reducer;
 export const {
+    setTeachers,
     setData,
     setStudents,
     cleanStudents,
@@ -52,6 +56,23 @@ export const getStudents = (): AppThunk => async (
         const { data } = await API.getStudents();
 
         dispatch(setStudents(data));
+        dispatch(changeError(""));
+        dispatch(changeIsLoading(false));
+    } catch (e) {
+        dispatch(changeError("Ошибка получения списка студентов"));
+        dispatch(changeIsLoading(false));
+    }
+};
+
+export const getTeachers = (): AppThunk => async (
+    dispatch
+) => {
+    dispatch(changeIsLoading(true));
+
+    try {
+        const { data } = await API.getTeachers();
+
+        dispatch(setTeachers(data));
         dispatch(changeError(""));
         dispatch(changeIsLoading(false));
     } catch (e) {

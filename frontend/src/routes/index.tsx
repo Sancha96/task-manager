@@ -20,6 +20,8 @@ import {
     Users,
 } from "react-feather";
 import {Routes} from "../constants/links";
+import {People} from "@material-ui/icons";
+import Students from "../pages/Students";
 
 // Guards
 // const AuthGuard = async(() => import("../components/AuthGuard"));
@@ -61,8 +63,15 @@ const projectsRoutes = {
     id: "Проекты",
     path: Routes.Projects,
     icon: <Briefcase />,
-    badge: "2",
     component: Projects,
+    children: null,
+};
+
+const studentsRoutes = {
+    id: "Студенты",
+    path: Routes.Students,
+    icon: <People />,
+    component: Students,
     children: null,
 };
 
@@ -95,6 +104,7 @@ const projectsRoutes = {
 export const dashboardLayoutRoutes = [
     pagesRoutes,
     projectsRoutes,
+    studentsRoutes,
 ];
 
 // Routes using the Auth layout
@@ -104,5 +114,5 @@ export const dashboardLayoutRoutes = [
 export const sidebarRoutes = [
     pagesRoutes,
     projectsRoutes,
-    // authRoutes,
+    studentsRoutes,
 ];

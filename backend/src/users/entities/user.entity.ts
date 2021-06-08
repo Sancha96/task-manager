@@ -3,6 +3,7 @@ import {
   BeforeUpdate,
   Column,
   Entity,
+  JoinColumn,
   JoinTable,
   OneToMany,
   OneToOne,
@@ -14,7 +15,7 @@ import * as bcrypt from 'bcrypt';
 
 import { RefreshToken } from '../../auth/entities/refreshtoken.entity';
 import { Person } from '../../persons/entities/person.entity';
-import {Role} from "../../common/roles/role.enum";
+import { Role } from '../../common/roles/role.enum';
 
 @Entity('users')
 export class User {
@@ -33,6 +34,10 @@ export class User {
 
   @Column({ default: Role.Admin })
   roles: number;
+
+  @OneToOne(() => Person, (person) => person.user)
+  @JoinColumn()
+  person: Person;
 
   @OneToMany(
     () => RefreshToken,

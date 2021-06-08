@@ -10,6 +10,10 @@ import { ThunkAction } from "redux-thunk";
 import authSlice from "./auth/slice";
 import projectSlice from "./project/slice";
 import personSlice from "./person/slice";
+import userSlice from "./user/slice";
+import stageSlice from "./stage/slice";
+import projectTypesSlice from "./project-types/slice";
+import taskSlice from "./task/slice";
 
 const persistConfig = {
     key: "root",
@@ -22,6 +26,10 @@ const rootReducer = combineReducers({
     auth: authSlice,
     project: projectSlice,
     person: personSlice,
+    user: userSlice,
+    stage: stageSlice,
+    projectTypes: projectTypesSlice,
+    task: taskSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

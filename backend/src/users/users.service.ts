@@ -25,7 +25,9 @@ export class UsersService {
   }
 
   async findOne(uuid: string): Promise<User> {
-    const user = await this.usersRepository.findOne(uuid);
+    const user = await this.usersRepository.findOne(uuid, {
+      relations: ['person'],
+    });
 
     if (!user) {
       throw new NotFoundException('User not found');

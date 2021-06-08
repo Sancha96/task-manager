@@ -7,7 +7,7 @@ import {
   JoinColumn,
   JoinTable,
   ManyToMany,
-  ManyToOne,
+  ManyToOne, OneToMany,
   OneToOne,
   PrimaryColumn,
 } from 'typeorm';
@@ -36,17 +36,18 @@ export class Person {
   @Column({ nullable: true })
   type: string;
 
-  @OneToOne(() => User)
-  @JoinColumn()
+  @OneToOne(() => User, (user) => user.person)
   user: User;
 
-  @ManyToOne(() => Course, (course) => course.persons, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
+  @ManyToOne(() => Course, (course) => course.students)
   course?: Course;
 
   @ManyToMany(() => Task, (task) => task.executors)
-  @JoinTable()
   tasks?: Task[];
+
+  @ManyToMany(() => Project, (project) => project.executors)
+  projects?: Project[];
+
+  @OneToMany(() => Project, (project) => project.teacher)
+  monitoredProjects?: Project[];
 }

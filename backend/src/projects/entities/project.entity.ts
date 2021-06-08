@@ -4,11 +4,11 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
-  OneToMany,
+  ManyToOne,
   PrimaryColumn,
 } from 'typeorm';
-import { Type } from 'class-transformer';
-import { Task } from '../../tasks/entities/task.entity';
+import { Skill } from '../../skills/entities/skill.entity';
+import { ProjectType } from '../../project-types/entities/project-type.entity';
 
 @Entity('projects')
 export class Project {
@@ -24,7 +24,17 @@ export class Project {
   @Column({ default: 'backLog' })
   status: string;
 
-  @ManyToMany(() => Person)
+  @ManyToMany(() => Person, (person) => person.projects)
   @JoinTable()
-  persons: Person[];
+  executors: Person[];
+
+  @ManyToOne(() => Person, (person) => person.monitoredProjects)
+  teacher?: Person;
+
+  @ManyToOne(() => ProjectType, (projectType) => projectType.projects)
+  type?: ProjectType;
+
+  @ManyToMany(() => Skill)
+  @JoinTable()
+  skills: Skill[];
 }

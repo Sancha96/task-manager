@@ -26,6 +26,10 @@ import createTheme from "./theme";
 import './App.module.scss';
 import {THEMES} from "./constants/themes";
 import ProjectsCreate from "./pages/ProjectsCreate";
+import Stages from './pages/Stages';
+import Students from "./pages/Students";
+import Admin from './pages/Admin';
+import TasksCreate from "./pages/TasksCreate";
 
 const PrivateRoute = ({ component: Component, ...rest }: any) => {
     const data = useSelector((state: RootState) => state.auth.data);
@@ -52,8 +56,12 @@ const Routes = () => {
             <Route exact path={URLs.Register} component={Register} />
             <PrivateRoute path={URLs.Profile} component={Profile} />
             <PrivateRoute exact path={URLs.Projects} component={Projects} />
-            <PrivateRoute path={URLs.ProjectsCreate} component={ProjectsCreate} />
-            <PrivateRoute path={URLs.Tasks} component={Tasks} />
+            <PrivateRoute path={URLs.Board} component={Tasks} />
+            <PrivateRoute exact path={URLs.Students} component={Students} />
+            <PrivateRoute exact path={URLs.ProjectsCreate} component={ProjectsCreate} />
+            <PrivateRoute exact path={URLs.TasksCreate} component={TasksCreate} />
+            <PrivateRoute exact path={URLs.Project} component={Stages} />
+            <PrivateRoute exact path={URLs.Admin} component={Admin} />
         </Switch>
     </Router>
 }

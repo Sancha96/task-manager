@@ -49,7 +49,6 @@ export class UsersController {
   async create(@Body(new ValidationPipe()) createUserDto: CreateUserDto) {
     const { username, email, password, ...otherFields } = createUserDto;
     const user = await this.usersService.create({ username, email, password });
-    console.log(user, user.uuid)
     await this.personsService.create({
       userUuid: user.uuid,
       ...otherFields,

@@ -13,6 +13,7 @@ const authSlice = createSlice({
     reducers: {
         setData(state, {payload}: PayloadAction<DataType>) {
             state.data = payload;
+            console.log('111111')
         },
         cleanData(state) {
             state.data = {};

@@ -7,12 +7,16 @@ const projectSlice = createSlice({
     name: "project",
     initialState: {
         data: [],
+        item: null,
         isLoading: false,
         error: "",
     } as ProjectState,
     reducers: {
         setData(state, action: PayloadAction<DataType[]>) {
             state.data = action.payload;
+        },
+        setItem(state, action: PayloadAction<DataType[]>) {
+            state.item = action.payload;
         },
         cleanData(state) {
             state.data = [];
@@ -28,20 +32,38 @@ const projectSlice = createSlice({
 
 export default projectSlice.reducer;
 export const {
+    setItem,
     setData,
     changeIsLoading,
     changeError,
 } = projectSlice.actions;
 
-export const getProjects = (): AppThunk => async (
+export const getProjects = (params: any): AppThunk => async (
     dispatch
 ) => {
     dispatch(changeIsLoading(true));
 
     try {
-        const { data } = await API.getList();
+        const { data } = await API.getList(params);
 
         dispatch(setData(data));
+        dispatch(changeError(""));
+        dispatch(changeIsLoading(false));
+    } catch (e) {
+        dispatch(changeError("Ошибка получения данных"));
+        dispatch(changeIsLoading(false));
+    }
+};
+
+export const getProjectById = (id: any): AppThunk => async (
+    dispatch
+) => {
+    dispatch(changeIsLoading(true));
+
+    try {
+        const { data } = await API.getById(id);
+
+        dispatch(setItem(data));
         dispatch(changeError(""));
         dispatch(changeIsLoading(false));
     } catch (e) {

@@ -3,7 +3,11 @@ export enum Routes {
     Register = "/register",
     Profile = "/profile",
     Projects = "/projects",
+    Project = "/projects/:id",
+    Board = "/projects/:id/:stageId",
     ProjectsCreate = "/projects/create",
-    Tasks = "/tasks",
+    TasksCreate = "/tasks/create",
+    Students = "/students",
+    Admin = "/admin",
     NotFound = "*",
 }

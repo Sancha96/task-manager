@@ -5,9 +5,11 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ProjectsModule } from './projects/projects.module';
 import { PersonsModule } from './persons/persons.module';
-import { TeachersModule } from './teachers/teachers.module';
 import { CoursesModule } from './courses/courses.module';
 import { TasksModule } from './tasks/tasks.module';
+import { StagesModule } from './stages/stages.module';
+import { SkillsModule } from './skills/skills.module';
+import { ProjectTypesModule } from './project-types/project-types.module';
 
 @Module({
   imports: [
@@ -17,9 +19,11 @@ import { TasksModule } from './tasks/tasks.module';
     AuthModule,
     ProjectsModule,
     PersonsModule,
-    TeachersModule,
     CoursesModule,
     TasksModule,
+    StagesModule,
+    SkillsModule,
+    ProjectTypesModule,
   ],
   controllers: [],
   providers: [],

@@ -15,15 +15,15 @@ import {
 
 import { spacing, SpacingProps } from "@material-ui/system";
 import {useDispatch, useSelector} from "react-redux";
-import {createProject, getProjects} from "../store/project/slice";
+import {createProject} from "../store/project/slice";
 import * as Yup from "yup";
-import {login} from "../store/auth/slice";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import {Routes} from "../constants/links";
 import {Formik} from "formik";
-import {getStudents} from "../store/person/slice";
+import {getStudents, getTeachers} from "../store/person/slice";
 import {RootState} from "../store";
+import {getAllTypes} from "../store/project-types/slice";
 
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 
@@ -37,9 +37,12 @@ const Typography = styled(MuiTypography)<TypographyPropsType>(spacing);
 function ProjectsCreate() {
     const history = useHistory();
     const dispatch = useDispatch();
-    const students = useSelector((state: RootState) => state.person.students)
+    const { students, teachers } = useSelector((state: RootState) => state.person)
+    const types = useSelector((state: RootState) => state.projectTypes.data)
     const getData = () => {
-        dispatch(getStudents())
+        dispatch(getStudents());
+        dispatch(getTeachers());
+        dispatch(getAllTypes());
     }
 
     useEffect(() => {
@@ -71,13 +74,15 @@ function ProjectsCreate() {
                     initialValues={{
                         title: "",
                         description: "",
-                        persons: [],
+                        executors: [],
+                        teacher: "",
+                        type: "",
                         error: ""
 
                     }}
                     validationSchema={Yup.object().shape({
                         title: Yup.string().required("Это обязательное поле"),
-                        // persons: Yup.string().required("Это обязательное поле"),
+                        // executors: Yup.string().required("Это обязательное поле"),
                     })}
                     onSubmit={async (values) => {
                         console.log(values)
@@ -111,12 +116,11 @@ function ProjectsCreate() {
                                 <FormHelperText>Студенты</FormHelperText>
                                 <Select
                                     variant="outlined"
-                                    // required
                                     fullWidth
-                                    id="persons"
-                                    name="persons"
+                                    id="executors"
+                                    name="executors"
                                     multiple
-                                    value={values.persons}
+                                    value={values.executors}
                                     onChange={handleChange}
                                 >
                                     {
@@ -124,6 +128,48 @@ function ProjectsCreate() {
                                             (
                                                 <MenuItem key={student.uuid} value={student.uuid}>
                                                     {`${student.firstName} ${student.lastName}`}
+                                                </MenuItem>
+                                            ))
+                                    }
+                                </Select>
+                            </FormControl>
+
+                            <FormControl margin="normal" fullWidth>
+                                <FormHelperText>Преподаватель</FormHelperText>
+                                <Select
+                                    variant="outlined"
+                                    fullWidth
+                                    id="teacher"
+                                    name="teacher"
+                                    value={values.teacher}
+                                    onChange={handleChange}
+                                >
+                                    {
+                                        teachers?.map((teacher: any) =>
+                                            (
+                                                <MenuItem key={teacher.uuid} value={teacher.uuid}>
+                                                    {`${teacher.firstName} ${teacher.lastName}`}
+                                                </MenuItem>
+                                            ))
+                                    }
+                                </Select>
+                            </FormControl>
+
+                            <FormControl margin="normal" fullWidth>
+                                <FormHelperText>Тип проекта</FormHelperText>
+                                <Select
+                                    variant="outlined"
+                                    fullWidth
+                                    id="type"
+                                    name="type"
+                                    value={values.type}
+                                    onChange={handleChange}
+                                >
+                                    {
+                                        types?.map((type: any) =>
+                                            (
+                                                <MenuItem key={type.uuid} value={type.uuid}>
+                                                    {type.title}
                                                 </MenuItem>
                                             ))
                                     }

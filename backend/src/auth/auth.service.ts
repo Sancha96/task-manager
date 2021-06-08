@@ -40,7 +40,7 @@ export class AuthService {
       ipAddress,
     });
 
-    return { accessToken, refreshToken };
+    return { uuid: user.uuid, accessToken, refreshToken };
   }
 
   async logout(refreshToken: string): Promise<any> {

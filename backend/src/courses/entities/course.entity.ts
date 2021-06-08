@@ -1,5 +1,4 @@
 import { Person } from '../../persons/entities/person.entity';
-import { Teacher } from '../../teachers/entities/teacher.entity';
 import {
   Column,
   Entity,
@@ -8,7 +7,6 @@ import {
   OneToMany,
   PrimaryColumn,
 } from 'typeorm';
-import { Type } from 'class-transformer';
 
 @Entity('courses')
 export class Course {
@@ -18,16 +16,12 @@ export class Course {
   @Column()
   name: string;
 
-  @ManyToMany(() => Teacher, (teacher) => teacher.courses, {
-    nullable: true,
-  })
+  @ManyToMany(() => Person)
   @JoinTable()
-  teachers?: Teacher[];
+  teachers?: Person[];
 
-  @Type(() => Person)
   @OneToMany(() => Person, (person) => person.course, {
     nullable: true,
   })
-  @JoinTable()
-  persons?: Person[];
+  students?: Person[];
 }

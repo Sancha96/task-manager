@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import styled from "styled-components/macro";
-import { NavLink } from "react-router-dom";
+import {NavLink, useHistory, useParams} from "react-router-dom";
 
 import "dragula/dist/dragula.css";
 
@@ -9,7 +9,7 @@ import {
   Breadcrumbs as MuiBreadcrumbs,
   Button,
   Card as MuiCard,
-  CardContent as MuiCardContent,
+  CardContent as MuiCardContent, Chip as MuiChip,
   Divider as MuiDivider,
   Grid,
   Link,
@@ -20,13 +20,20 @@ import { AvatarGroup } from "@material-ui/lab";
 
 import { spacing } from "@material-ui/system";
 
-import { orange, green, blue } from "@material-ui/core/colors";
-
 import { Add as AddIcon } from "@material-ui/icons";
 
 import { MessageCircle } from "react-feather";
 
 import dragula from "dragula";
+import {useDispatch, useSelector} from "react-redux";
+import {getStageById} from "../store/stage/slice";
+import {RootState} from "../store";
+import {getProjectById} from "../store/project/slice";
+import {getTasks} from "../store/task/slice";
+import API from "../API/task";
+import APIProject from "../API/project";
+import {green, orange, red} from "@material-ui/core/colors";
+import {Routes} from "../constants/links";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -101,13 +108,19 @@ type LanePropsType = {
   title: string;
   description?: string;
   onContainerLoaded: (container: Element) => void;
+  type: any;
 };
 const Lane: React.FC<LanePropsType> = ({
   title,
   description,
   onContainerLoaded,
+    type,
   children,
 }) => {
+  const history = useHistory();
+  const params = useParams<any>();
+  const { stageId, id: projectId } = params;
+  const user: any = useSelector((state: RootState) => state.user.data);
   const handleContainerLoaded = (container: HTMLDivElement | null) => {
     if (container) {
       onContainerLoaded(container);
@@ -123,26 +136,46 @@ const Lane: React.FC<LanePropsType> = ({
         <Typography variant="body2" mb={4}>
           {description}
         </Typography>
-        <div ref={handleContainerLoaded}>{children}</div>
-        <Button color="primary" variant="contained" fullWidth>
+        <div ref={handleContainerLoaded} data-type={type} style={{ padding: '20px 0' }}>{children}</div>
+        {type === "backlog" && user?.person?.type === "teacher" && <Button color="primary" variant="contained" fullWidth onClick={() => {
+          history.push({
+            pathname: Routes.TasksCreate,
+            state: {
+              stageId,
+              projectId,
+            }
+          })
+        }}>
           <AddIcon />
           Добавить задачу
-        </Button>
+        </Button>}
       </CardContent>
     </Card>
   );
 };
 
+const Chip = styled(MuiChip)<{ rgbcolor: string }>`
+  height: 20px;
+  padding: 4px 0;
+  font-size: 90%;
+  background-color: ${(props) => props.rgbcolor};
+  color: ${(props) => props.theme.palette.common.white};
+`;
+
 type TaskPropsType = {
-  content: DemoTasksElement;
+  content: any;
   avatars: Array<number>;
 };
-const Task: React.FC<TaskPropsType> = ({ content, avatars }) => {
+const Task: React.FC<TaskPropsType> = ({ content }) => {
+  const params = useParams<any>();
+  const { stageId, id: projectId } = params;
+  const user: any = useSelector((state: RootState) => state.user.data);
+  const dispatch = useDispatch();
   return (
-    <TaskWrapper mb={4}>
+    <TaskWrapper mb={4} data-task-id={content.uuid} data-is-confirmed={content.isConfirmed}>
       <TaskWrapperContent>
         {content.badges &&
-          content.badges.map((color, i) => <TaskBadge color={color} key={i} />)}
+          content.badges.map((color: any, i: number) => <TaskBadge color={color} key={i} />)}
 
         <TaskTitle variant="body1" gutterBottom>
           {content.title}
@@ -150,13 +183,7 @@ const Task: React.FC<TaskPropsType> = ({ content, avatars }) => {
 
         <TaskAvatars>
           <AvatarGroup max={3}>
-            {avatars &&
-              avatars.map((avatar, i) => (
-                <Avatar
-                  src={`/static/img/avatars/avatar-${avatar}.jpg`}
-                  key={i}
-                />
-              ))}
+            {content.executors?.map((executor: any) => (<Avatar key={executor.uuid} title={`${executor.firstName} ${executor.lastName}`}>{executor.firstName[0]}{executor.lastName[0]}</Avatar>))}
           </AvatarGroup>
         </TaskAvatars>
 
@@ -168,62 +195,71 @@ const Task: React.FC<TaskPropsType> = ({ content, avatars }) => {
             <MessageCircleIcon />
           </TaskNotifications>
         )}
+        {user?.person?.type === "teacher" && content?.status === "done" && !content.isConfirmed && <Button color="primary" variant="contained" onClick={() => {
+          API.updateStatusTask(content.uuid, { isConfirmed: true }).then(() => {
+            dispatch(getTasks({ projectId, stageId }))
+          });
+        }}>
+          Подтвердить
+        </Button>}
+        {
+          content?.status === "done" && content.isConfirmed && <Chip
+              label="Подтверждено"
+              rgbcolor={green[500]}/>
+        }
       </TaskWrapperContent>
     </TaskWrapper>
   );
 };
 
-type DemoTasksElement = {
-  title: string;
-  badges?: Array<string>;
-  notifications?: number;
-};
-const demoTasks = [
-  {
-    title: "Создание схемы БД",
-    badges: [green[600], orange[600]],
-    notifications: 2,
-  },
-  {
-    title: "Разворачивание серверной части приложения",
-    badges: [green[600]],
-    notifications: 1,
-  },
-  {
-    title: "Создание источника Users",
-  },
-  {
-    title: "Подключение TypeORM",
-    badges: [green[600]],
-    notifications: 3,
-  },
-  {
-    title: "Реализация контроллера и сервиса Users",
-    badges: [blue[600]],
-  },
-];
-
 const containers: Array<Element> = [];
 
 function Tasks() {
+  const dispatch = useDispatch();
+  const params = useParams<any>();
+  const { stageId, id: projectId } = params;
+  const stage = useSelector((state: RootState) => state.stage.item);
+  const project = useSelector((state: RootState) => state.project.item);
+  const tasks = useSelector((state: RootState) => state.task.data);
   const onContainerReady = (container: Element) => {
     containers.push(container);
   };
 
   useEffect(() => {
-    dragula(containers);
+    dragula(containers, {
+      accepts: function (el, target, source, sibling) {
+        const taskId = el?.getAttribute('data-task-id');
+        const type = target?.getAttribute('data-type');
+        API.updateStatusTask(taskId, { status: type });
+        if (type === "inprogress") {
+          APIProject.updateProject(projectId, { status: "inProgress" })
+        }
+        return true;
+      },
+      // invalid: function (el, handle) {
+      //   const isConfirmed = Boolean(el?.getAttribute('data-is-confirmed'));
+      //   return isConfirmed;
+      // },
+    });
+    dispatch(getStageById(stageId));
+    dispatch(getProjectById(projectId));
+    dispatch(getTasks({ projectId, stageId }))
   }, []);
 
   return (
-    <React.Fragment>
+    <>
       <Typography variant="h3" gutterBottom display="inline">
-        Задачи
+        Этап: {stage?.title}
       </Typography>
 
       <Breadcrumbs aria-label="Breadcrumb" mt={2}>
         <Link component={NavLink} exact to="/">
           Главная
         </Link>
+        <Link component={NavLink} exact to="/projects">
+          Проекты
+        </Link>
+        <Link component={NavLink} exact to={`/projects/${projectId}`} title={project?.title}>{project?.title.slice(0, 30)}{project?.title.length > 30 ? '...' : ''}</Link>
         <Typography>Задачи</Typography>
       </Breadcrumbs>
 
@@ -233,46 +269,57 @@ function Tasks() {
         <Grid item xs={12} lg={3} xl={3}>
           <Lane
             title="Backlog"
+            type="backlog"
             onContainerLoaded={onContainerReady}
           >
-            <Task content={demoTasks[2]} avatars={[2]} />
-            <Task content={demoTasks[3]} avatars={[2, 3]} />
-            <Task content={demoTasks[4]} avatars={[]} />
+            {
+              tasks?.filter((task: any) => task.status === "backlog").map((task: any) => (
+                  <Task key={task.uuid} content={task} avatars={[0]} />
+              ))
+            }
           </Lane>
         </Grid>
         <Grid item xs={12} lg={3} xl={3}>
           <Lane
-            title="To do"
+            title="Paused"
+            type="paused"
             onContainerLoaded={onContainerReady}
           >
-            <Task content={demoTasks[0]} avatars={[1, 2, 3, 4]} />
-            <Task content={demoTasks[2]} avatars={[2]} />
-            <Task content={demoTasks[3]} avatars={[2, 3]} />
-            <Task content={demoTasks[1]} avatars={[]} />
-            <Task content={demoTasks[4]} avatars={[]} />
+            {
+              tasks?.filter((task: any) => task.status === "paused").map((task: any) => (
+                  <Task key={task.uuid} content={task} avatars={[0]} />
+              ))
+            }
           </Lane>
         </Grid>
         <Grid item xs={12} lg={3} xl={3}>
           <Lane
             title="In Progress"
+            type="inprogress"
             onContainerLoaded={onContainerReady}
           >
-            <Task content={demoTasks[2]} avatars={[3, 1, 2]} />
-            <Task content={demoTasks[4]} avatars={[2]} />
+            {
+              tasks?.filter((task: any) => task.status === "inprogress").map((task: any) => (
+                  <Task key={task.uuid} content={task} avatars={[0]} />
+              ))
+            }
           </Lane>
         </Grid>
         <Grid item xs={12} lg={3} xl={3}>
           <Lane
-            title="Completed"
+            title="Done"
+            type="done"
             onContainerLoaded={onContainerReady}
           >
-            <Task content={demoTasks[3]} avatars={[1, 2]} />
-            <Task content={demoTasks[2]} avatars={[4]} />
-            <Task content={demoTasks[0]} avatars={[]} />
+            {
+              tasks?.filter((task: any) => task.status === "done").map((task: any) => (
+                  <Task key={task.uuid} content={task} avatars={[0]} />
+              ))
+            }
           </Lane>
         </Grid>
       </Grid>
-    </React.Fragment>
+    </>
   );
 }
 

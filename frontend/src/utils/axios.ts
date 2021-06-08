@@ -7,7 +7,7 @@ export const baseURL =
 
 export const configAxios: (logout: () => void, store: any) => void = (logout, store) => {
     const onRequestSuccess = (config: AxiosRequestConfig): AxiosRequestConfig => {
-        const token = store.getState(store)?.auth?.data?.access_token;
+        const token = store.getState(store)?.auth?.data?.accessToken;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }

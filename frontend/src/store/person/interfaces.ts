@@ -1,6 +1,7 @@
 export interface PersonState {
     data: [];
     students: [];
+    teachers: [];
     isLoading: boolean;
     error: string;
 }
