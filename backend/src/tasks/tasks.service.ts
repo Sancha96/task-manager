@@ -52,9 +52,10 @@ export class TasksService {
       }
 
       if (otherProp.status === 'paused') {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        property.actualTime = new Date() - property.startTime;
+        property.actualTime =
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          property.actualTime + (new Date() - property.startTime);
         otherProp.startTime = null;
       }
 
