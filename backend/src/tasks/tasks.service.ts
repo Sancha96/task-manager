@@ -51,7 +51,7 @@ export class TasksService {
         otherProp.startTime = new Date();
       }
 
-      if (otherProp.status === 'paused') {
+      if (otherProp.status !== 'inprogress') {
         property.actualTime =
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
