@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { PersonsService } from './persons.service';
 import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
@@ -19,7 +28,12 @@ export class PersonsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.personsService.findOne(+id);
+    return this.personsService.findOne(id);
+  }
+
+  @Post('/dashboard')
+  getDataForDashboard(@Query() params) {
+    return this.personsService.getDataForDashboard(params);
   }
 
   @Patch(':id')
@@ -29,6 +43,6 @@ export class PersonsController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.personsService.remove(+id);
+    return this.personsService.remove(id);
   }
 }

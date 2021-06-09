@@ -28,7 +28,10 @@ export class Task {
   estimatedTime?: Date;
 
   @Column({ nullable: true })
-  actualTime?: Date;
+  actualTime?: number;
+
+  @Column({ nullable: true })
+  startTime?: Date;
 
   @Column({ default: 'backlog' })
   status: string;

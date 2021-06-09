@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './entities/project.entity';
+import { Task } from '../tasks/entities/task.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import {In, Repository} from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreatePersonDto } from '../persons/dto/create-person.dto';
 import { Person } from '../persons/entities/person.entity';
-import {UpdateTaskDto} from "../tasks/dto/update-task.dto";
+import { UpdateTaskDto } from '../tasks/dto/update-task.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -14,6 +15,8 @@ export class ProjectsService {
     private readonly projectsRepository: Repository<Project>,
     @InjectRepository(Person)
     private readonly personsRepository: Repository<Person>,
+    @InjectRepository(Task)
+    private readonly taskRepository: Repository<Task>,
   ) {}
 
   async create(createPersonDto: any) {
@@ -31,11 +34,38 @@ export class ProjectsService {
   async findAll(options) {
     if (options?.executor) {
       const person: any = await this.personsRepository.findOne({
-        relations: ['projects', 'projects.executors', 'projects.teacher'],
         where: {
           uuid: options.executor,
         },
+        relations: ['projects', 'projects.executors', 'projects.teacher'],
       });
+      const projectIds = person.projects.map((project) => project.uuid);
+      const tasks: any = await this.taskRepository.find({
+        relations: ['project'],
+        where: {
+          project: In(projectIds),
+        },
+      });
+      person.projects.forEach(
+        (project) =>
+          (project.tasks = tasks.filter(
+            (task) => task.project.uuid === project.uuid,
+          )),
+      );
+
+      person.projects.forEach((project) => {
+        const tasksCount = project.tasks.length;
+        const confirmedCount = [];
+        tasksCount &&
+          project.tasks.forEach(
+            ({ isConfirmed }) => isConfirmed && confirmedCount.push(true),
+          );
+
+        project.progress = Number(
+          ((confirmedCount?.length / tasksCount || 0) * 100).toFixed(2),
+        );
+      });
+
       return person.projects;
     }
 
@@ -45,6 +75,32 @@ export class ProjectsService {
         where: {
           teacher: options.teacher,
         },
+      });
+      const projectIds = projects.map((project) => project.uuid);
+      const tasks: any = await this.taskRepository.find({
+        relations: ['project'],
+        where: {
+          project: In(projectIds),
+        },
+      });
+      projects.forEach(
+        (project) =>
+          (project.tasks = tasks.filter(
+            (task) => task.project.uuid === project.uuid,
+          )),
+      );
+
+      projects.forEach((project) => {
+        const tasksCount = project.tasks.length;
+        const confirmedCount = [];
+        tasksCount &&
+          project.tasks.forEach(
+            ({ isConfirmed }) => isConfirmed && confirmedCount.push(true),
+          );
+
+        project.progress = Number(
+          ((confirmedCount?.length / tasksCount || 0) * 100).toFixed(2),
+        );
       });
 
       return projects;

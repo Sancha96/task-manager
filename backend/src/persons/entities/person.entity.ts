@@ -7,7 +7,8 @@ import {
   JoinColumn,
   JoinTable,
   ManyToMany,
-  ManyToOne, OneToMany,
+  ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryColumn,
 } from 'typeorm';
@@ -35,6 +36,9 @@ export class Person {
 
   @Column({ nullable: true })
   type: string;
+
+  @Column({ nullable: true, default: null })
+  deletedAt: Date;
 
   @OneToOne(() => User, (user) => user.person)
   user: User;
