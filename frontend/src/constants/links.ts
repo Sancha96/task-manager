@@ -8,6 +8,7 @@ export enum Routes {
     ProjectsCreate = "/projects/create",
     TasksCreate = "/tasks/create",
     Students = "/students",
+    Statistics = "/statistics",
     Admin = "/admin",
     NotFound = "*",
 }

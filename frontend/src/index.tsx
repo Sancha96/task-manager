@@ -5,7 +5,7 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 
 import { store, persistor } from "./store";
-import {logout} from "./store/auth/slice";
+import { logout } from "./store/auth/slice";
 
 import { configAxios } from "./utils/axios";
 

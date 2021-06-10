@@ -22,6 +22,7 @@ import {
 import {Routes} from "../constants/links";
 import {People} from "@material-ui/icons";
 import Students from "../pages/Students";
+import Statistics from "../pages/Statistics";
 
 // Guards
 // const AuthGuard = async(() => import("../components/AuthGuard"));
@@ -75,6 +76,14 @@ const studentsRoutes = {
     children: null,
 };
 
+const statisticsRoutes = {
+    id: "Статистика",
+    path: Routes.Statistics,
+    icon: <People />,
+    component: Statistics,
+    children: null,
+};
+
 // const tasksRoutes = {
 //     id: "Tasks",
 //     path: "/tasks",
@@ -105,6 +114,7 @@ export const dashboardLayoutRoutes = [
     pagesRoutes,
     projectsRoutes,
     studentsRoutes,
+    statisticsRoutes,
 ];
 
 // Routes using the Auth layout
@@ -115,4 +125,5 @@ export const sidebarRoutes = [
     pagesRoutes,
     projectsRoutes,
     studentsRoutes,
+    statisticsRoutes,
 ];

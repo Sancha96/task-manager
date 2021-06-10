@@ -30,6 +30,7 @@ import Stages from './pages/Stages';
 import Students from "./pages/Students";
 import Admin from './pages/Admin';
 import TasksCreate from "./pages/TasksCreate";
+import Statistics from './pages/Statistics';
 
 const PrivateRoute = ({ component: Component, ...rest }: any) => {
     const data = useSelector((state: RootState) => state.auth.data);
@@ -62,6 +63,7 @@ const Routes = () => {
             <PrivateRoute exact path={URLs.TasksCreate} component={TasksCreate} />
             <PrivateRoute exact path={URLs.Project} component={Stages} />
             <PrivateRoute exact path={URLs.Admin} component={Admin} />
+            <PrivateRoute exact path={URLs.Statistics} component={Statistics} />
         </Switch>
     </Router>
 }
