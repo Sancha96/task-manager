@@ -51,7 +51,4 @@ export class Person {
 
   @ManyToMany(() => Project, (project) => project.executors)
   projects?: Project[];
-
-  @OneToMany(() => Project, (project) => project.teacher)
-  monitoredProjects?: Project[];
 }

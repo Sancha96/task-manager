@@ -28,7 +28,7 @@ export class Project {
   @JoinTable()
   executors: Person[];
 
-  @ManyToOne(() => Person, (person) => person.monitoredProjects)
+  @ManyToOne(() => Person)
   teacher?: Person;
 
   @ManyToOne(() => ProjectType, (projectType) => projectType.projects)

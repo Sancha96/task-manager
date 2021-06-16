@@ -20,6 +20,9 @@ export class TasksService {
       where: {
         uuid: In(createTaskDto.executors),
       },
+      order: {
+        lastName: 'ASC',
+      },
     });
     createTaskDto.executors = executors;
     const task = await this.tasksRepository.create(createTaskDto);
@@ -50,16 +53,13 @@ export class TasksService {
       if (otherProp.status === 'inprogress') {
         otherProp.startTime = new Date();
       }
-
-      if (otherProp.status !== 'inprogress') {
+      if (otherProp.status !== 'inprogress' && otherProp.status !== 'done' && !otherProp.isConfirmed) {
         property.actualTime =
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          property.actualTime + (new Date() - property.startTime);
-        otherProp.startTime = null;
+            Number(((property.actualTime + (new Date() - property.startTime)) / 60 / 60).toFixed());
+        otherProp.startTime = 0;
       }
-
-      console.log(otherProp);
       return this.tasksRepository.save({
         ...property,
         ...otherProp,

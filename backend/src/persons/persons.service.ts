@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreatePersonDto } from './dto/create-person.dto';
 import { UpdatePersonDto } from './dto/update-person.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getConnection } from 'typeorm';
+import { getConnection, In } from 'typeorm';
 // import { Task } from '../tasks/entities/task.entity';
 import { Repository } from 'typeorm';
 import { Person } from './entities/person.entity';
@@ -27,9 +27,7 @@ export class PersonsService {
       .from(Person, 'persons')
       .where('persons.deletedAt IS NULL')
       .andWhere('persons.type = :type', { type: 'student' })
-      // .leftJoin()
       .execute();
-    console.log(asd);
     return asd;
   }
 
@@ -41,9 +39,50 @@ export class PersonsService {
 
   async findAll(params: any) {
     if (params.type) {
-      return await this.personsRepository.find({
+      const persons = await this.personsRepository.find({
+        relations: ['projects', 'projects.teacher', 'user'],
         where: { type: params.type },
+        order: {
+          lastName: 'ASC',
+        },
       });
+
+      const projectIds = [];
+      persons.map((person) =>
+        person.projects.map((project) => projectIds.push(project.uuid)),
+      );
+      const tasks: any = await this.tasksRepository.find({
+        relations: ['project'],
+        where: {
+          project: In(projectIds),
+        },
+      });
+
+      persons.map((person: any) => {
+        person.projects.forEach(
+          (project: any) =>
+            (project.tasks = tasks.filter(
+              (task) => task.project.uuid === project.uuid,
+            )),
+        );
+      });
+
+      persons.map((person: any) => {
+        person.projects.forEach((project: any) => {
+          const tasksCount = project.tasks.length;
+          const confirmedCount = [];
+          tasksCount &&
+            project.tasks.forEach(
+              ({ isConfirmed }) => isConfirmed && confirmedCount.push(true),
+            );
+
+          project.progress = Number(
+            ((confirmedCount?.length / tasksCount || 0) * 100).toFixed(2),
+          );
+        });
+      });
+
+      return persons;
     }
   }
 

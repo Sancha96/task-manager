@@ -7,6 +7,7 @@ import { In, Repository } from 'typeorm';
 import { CreatePersonDto } from '../persons/dto/create-person.dto';
 import { Person } from '../persons/entities/person.entity';
 import { UpdateTaskDto } from '../tasks/dto/update-task.dto';
+import { Skill } from '../skills/entities/skill.entity';
 
 @Injectable()
 export class ProjectsService {
@@ -16,7 +17,9 @@ export class ProjectsService {
     @InjectRepository(Person)
     private readonly personsRepository: Repository<Person>,
     @InjectRepository(Task)
-    private readonly taskRepository: Repository<Task>,
+    private readonly tasksRepository: Repository<Task>,
+    @InjectRepository(Skill)
+    private readonly skillsRepository: Repository<Task>,
   ) {}
 
   async create(createPersonDto: any) {
@@ -24,8 +27,18 @@ export class ProjectsService {
       where: {
         uuid: In(createPersonDto.executors),
       },
+      order: {
+        lastName: 'ASC',
+      },
     });
     createPersonDto.executors = executors;
+    const skills = await this.skillsRepository.find({
+      where: {
+        uuid: In(createPersonDto.skills),
+      },
+    });
+    createPersonDto.skills = skills;
+
     const project = await this.projectsRepository.create(createPersonDto);
 
     return await this.projectsRepository.save(project);
@@ -37,10 +50,15 @@ export class ProjectsService {
         where: {
           uuid: options.executor,
         },
-        relations: ['projects', 'projects.executors', 'projects.teacher'],
+        relations: [
+          'projects',
+          'projects.executors',
+          'projects.teacher',
+          'projects.skills',
+        ],
       });
       const projectIds = person.projects.map((project) => project.uuid);
-      const tasks: any = await this.taskRepository.find({
+      const tasks: any = await this.tasksRepository.find({
         relations: ['project'],
         where: {
           project: In(projectIds),
@@ -71,13 +89,13 @@ export class ProjectsService {
 
     if (options?.teacher) {
       const projects: any = await this.projectsRepository.find({
-        relations: ['executors', 'teacher'],
+        relations: ['executors', 'teacher', 'skills'],
         where: {
           teacher: options.teacher,
         },
       });
       const projectIds = projects.map((project) => project.uuid);
-      const tasks: any = await this.taskRepository.find({
+      const tasks: any = await this.tasksRepository.find({
         relations: ['project'],
         where: {
           project: In(projectIds),
