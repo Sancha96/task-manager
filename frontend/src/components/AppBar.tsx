@@ -12,12 +12,13 @@ import {
   Toolbar,
 } from "@material-ui/core";
 
-import { Menu as MenuIcon } from "@material-ui/icons";
+import {Menu as MenuIcon, Palette as PaletteIcon} from "@material-ui/icons";
 
 import NotificationsDropdown from "./NotificationsDropdown";
 import MessagesDropdown from "./MessagesDropdown";
 import LanguagesDropdown from "./LanguagesDropdown";
 import UserDropdown from "./UserDropdown";
+import Settings from "./Settings";
 
 const AppBar = styled(MuiAppBar)`
   background: ${(props) => props.theme.header.background};
@@ -99,6 +100,7 @@ const AppBarComponent: React.FC<AppBarProps> = ({ onDrawerToggle }) => (
           </Hidden>
           <Grid item />
           <Grid item xs />
+          <Settings />
           <Grid item>
             <UserDropdown />
           </Grid>

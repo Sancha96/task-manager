@@ -166,6 +166,13 @@ type TaskPropsType = {
   content: any;
   avatars: Array<number>;
 };
+
+function getTimeFromMins(mins: any) {
+  let hours = Math.trunc(mins/60);
+  let minutes = mins % 60;
+  return (hours < 10 ? '0' + hours : hours) + ':' + (minutes < 10 ? '0' + minutes : minutes);
+};
+
 const Task: React.FC<TaskPropsType> = ({ content }) => {
   const params = useParams<any>();
   const { stageId, id: projectId } = params;
@@ -174,12 +181,19 @@ const Task: React.FC<TaskPropsType> = ({ content }) => {
   return (
     <TaskWrapper mb={4} data-task-id={content.uuid} data-is-confirmed={content.isConfirmed}>
       <TaskWrapperContent>
-        {content.badges &&
-          content.badges.map((color: any, i: number) => <TaskBadge color={color} key={i} />)}
+        {
+          content?.status === "done" && content.isConfirmed && <Chip
+            label="Подтверждено"
+            rgbcolor={green[500]}/>
+        }
 
         <TaskTitle variant="body1" gutterBottom>
           {content.title}
         </TaskTitle>
+
+        {content.actualTime && <div style={{ padding: '5px 0 10px' }}>
+          {`Затраченное время: ${getTimeFromMins(content.actualTime)}`}
+        </div>}
 
         <TaskAvatars>
           <AvatarGroup max={3}>
@@ -202,11 +216,6 @@ const Task: React.FC<TaskPropsType> = ({ content }) => {
         }}>
           Подтвердить
         </Button>}
-        {
-          content?.status === "done" && content.isConfirmed && <Chip
-              label="Подтверждено"
-              rgbcolor={green[500]}/>
-        }
       </TaskWrapperContent>
     </TaskWrapper>
   );

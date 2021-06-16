@@ -1,8 +1,5 @@
 export interface ProjectState {
-    data: DataType[] | Record<string, never>[];
-    item: any;
-    isLoading: boolean;
-    error: string;
+    theme: any;
 }
 
 export interface DataType {}

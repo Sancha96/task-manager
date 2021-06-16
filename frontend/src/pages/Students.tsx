@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import styled from "styled-components/macro";
 import { NavLink } from "react-router-dom";
 
@@ -9,11 +9,11 @@ import {
     Button,
     Checkbox,
     Chip as MuiChip,
-    Divider as MuiDivider, FormControlLabel,
+    Divider as MuiDivider, FormControl, FormControlLabel, FormHelperText,
     Grid,
     IconButton,
-    Link,
-    Paper as MuiPaper,
+    Link, MenuItem,
+    Paper as MuiPaper, Select,
     Table,
     TableBody,
     TableCell,
@@ -27,7 +27,7 @@ import {
     Typography,
 } from "@material-ui/core";
 
-import { green, orange } from "@material-ui/core/colors";
+import {green, grey, orange, red} from "@material-ui/core/colors";
 
 import {
     Add as AddIcon,
@@ -37,6 +37,16 @@ import {
 } from "@material-ui/icons";
 
 import { spacing, SpacingProps } from "@material-ui/system";
+import * as Yup from "yup";
+import {createProject} from "../store/project/slice";
+import {Routes} from "../constants/links";
+import TextField from "@material-ui/core/TextField";
+import {Formik} from "formik";
+import {useDispatch, useSelector} from "react-redux";
+import {RootState} from "../store";
+import {getStudents, getTeachers} from "../store/person/slice";
+import {getAllTypes} from "../store/project-types/slice";
+import {getSkills} from "../store/skill/slice";
 
 const Divider = styled(MuiDivider)(spacing);
 
@@ -48,14 +58,6 @@ interface MuiChipSpacingType extends SpacingProps {
     paid?: boolean;
     sent?: boolean;
 }
-const Chip = styled(MuiChip)<MuiChipSpacingType>`
-  ${spacing};
-
-  background: ${(props) => props.paid && green[500]};
-  background: ${(props) => props.sent && orange[700]};
-  color: ${(props) =>
-    (props.paid || props.sent) && props.theme.palette.common.white};
-`;
 
 const Spacer = styled.div`
   flex: 1 1 100%;
@@ -74,60 +76,22 @@ const Customer = styled.div`
   align-items: center;
 `;
 
-function createData(
-    customer: string,
-    customerEmail: string,
-    customerAvatar: string,
-    id: string,
-    theme: string,
-    teacher: string,
-) {
-    return { customer, customerEmail, customerAvatar, id, theme, teacher };
-}
+const Chip = styled(MuiChip)<{ rgbcolor: string }>`
+  height: 20px;
+  padding: 4px 0;
+  font-size: 90%;
+  background-color: ${(props) => props.rgbcolor};
+  color: ${(props) => props.theme.palette.common.white};
+`;
 
 type RowType = {
     [key: string]: string | number;
     customer: string;
     customerEmail: string;
-    customerAvatar: string;
     id: string;
-    theme: string;
+    projects: any;
     teacher: string;
 };
-const rows: Array<RowType> = [
-    createData(
-        "Андреев Александр Алексеевич",
-        "test@test.test",
-        "A",
-        "000112",
-        "Построение табулатуры для гитары на основе обработки аудиозаписи",
-        "Ступников А.А",
-    ),
-    createData(
-        "Бабин Евгений Геннадьевич",
-        "test@test.test",
-        "E",
-        "000114",
-        "Разработка приложения для анализа тренировочного процесса в пулевой стрельбе",
-        "Ромазанов А.Р.",
-    ),
-    createData(
-        "Беженарь Александр Васильевич",
-        "test@test.test",
-        "A",
-        "000117",
-        "Разработка прототипа системы эвакуации из здания",
-        "Донкова И.А.",
-    ),
-    createData(
-        "Бекасов Никита Александрович",
-        "test@test.test",
-        "N",
-        "000115",
-        "Разработка сервиса для контроля за соблюдением графиков и схем маршрутов дорожного транспорта",
-        "Гаврилова Н.М.",
-    ),
-];
 
 function descendingComparator(a: RowType, b: RowType, orderBy: string) {
     if (b[orderBy] < a[orderBy]) {
@@ -168,9 +132,10 @@ type HeadCell = {
     disablePadding?: boolean;
 };
 const headCells: Array<HeadCell> = [
-    { id: "customer", alignment: "left", label: "Студент" },
-    { id: "theme", alignment: "left", label: "Тема" },
-    { id: "actions", alignment: "right", label: "Действия" },
+    { id: "lastName", alignment: "left", label: "Студент" },
+    { id: "projects", alignment: "left", label: "Проекты" },
+    { id: "progress", alignment: "left", label: "Прогресс" },
+    { id: "teacher", alignment: "left", label: "Преподаватель" },
 ];
 
 type EnhancedTableHeadPropsType = {
@@ -183,11 +148,8 @@ type EnhancedTableHeadPropsType = {
 };
 const EnhancedTableHead: React.FC<EnhancedTableHeadPropsType> = (props) => {
     const {
-        onSelectAllClick,
         order,
         orderBy,
-        numSelected,
-        rowCount,
         onRequestSort,
     } = props;
     const createSortHandler = (property: string) => (event: any) => {
@@ -197,14 +159,6 @@ const EnhancedTableHead: React.FC<EnhancedTableHeadPropsType> = (props) => {
     return (
         <TableHead>
             <TableRow>
-                <TableCell padding="checkbox">
-                    <Checkbox
-                        indeterminate={numSelected > 0 && numSelected < rowCount}
-                        checked={rowCount > 0 && numSelected === rowCount}
-                        onChange={onSelectAllClick}
-                        inputProps={{ "aria-label": "select all" }}
-                    />
-                </TableCell>
                 {headCells.map((headCell: HeadCell) => (
                     <TableCell
                         key={headCell.id}
@@ -228,47 +182,123 @@ const EnhancedTableHead: React.FC<EnhancedTableHeadPropsType> = (props) => {
 
 type EnhancedTableToolbarPropsType = { numSelected: number };
 const EnhancedTableToolbar = (props: EnhancedTableToolbarPropsType) => {
-    const { numSelected } = props;
+    const dispatch = useDispatch();
+    const types = useSelector((state: RootState) => state.projectTypes.data);
+    const skills = useSelector((state: RootState) => state.skill.data);
+    const getData = () => {
+        dispatch(getAllTypes());
+        dispatch(getSkills());
+    };
+
+    useEffect(() => {
+        getData()
+    }, []);
 
     return (
         <Toolbar>
-            <ToolbarTitle>
-                {numSelected > 0 ? (
-                    <Typography color="inherit" variant="subtitle1">
-                        {numSelected} выбрано
-                    </Typography>
-                ) : (
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                name="checkedB"
+            <ToolbarTitle style={{width: '100%'}}>
+                <Formik
+                    initialValues={{
+                        course: "",
+                        type: "",
+                        skill: "",
+                    }}
+                    onSubmit={async (values) => null}
+                >
+                    {({ errors, handleChange, handleSubmit, touched, values }) => (
+                        <form noValidate onSubmit={handleSubmit} style={{ width: "100%", display: 'flex', justifyContent: "space-between", alignItems: "flex-end" }}>
+                            <FormControl fullWidth>
+                                <FormHelperText>Группа</FormHelperText>
+                                <Select
+                                    variant="outlined"
+                                    id="course"
+                                    name="course"
+                                    value={values.course}
+                                    onChange={handleChange}
+                                >
+                                    {
+                                        ["МОИАИС 174", "МОИАИС 164"].map((course: any) =>
+                                            (
+                                                <MenuItem key={course} value={course}>
+                                                    {course}
+                                                </MenuItem>
+                                            ))
+                                    }
+                                </Select>
+                            </FormControl>
+
+                            <FormControl fullWidth style={{ marginLeft: 20 }}>
+                                <FormHelperText>Тип проекта</FormHelperText>
+                                <Select
+                                    variant="outlined"
+                                    id="type"
+                                    name="type"
+                                    value={values.type}
+                                    onChange={handleChange}
+                                >
+                                    {
+                                        types?.map((type: any) =>
+                                            (
+                                                <MenuItem key={type.uuid} value={type.uuid}>
+                                                    {type.title}
+                                                </MenuItem>
+                                            ))
+                                    }
+                                </Select>
+                            </FormControl>
+
+                            <FormControl fullWidth style={{ marginLeft: 20 }}>
+                                <FormHelperText>Стэк</FormHelperText>
+                                <Select
+                                    variant="outlined"
+                                    id="skill"
+                                    name="skill"
+                                    value={values.skill}
+                                    onChange={handleChange}
+                                >
+                                    {
+                                        skills?.map((skill: any) =>
+                                            (
+                                                <MenuItem key={skill.uuid} value={skill.uuid}>
+                                                    {skill.title}
+                                                </MenuItem>
+                                            ))
+                                    }
+                                </Select>
+                            </FormControl>
+
+                            <Button
+                                type="submit"
+                                variant="contained"
                                 color="primary"
-                            />
-                        }
-                        label="Мои студенты"
-                    />
-                )}
+                                style={{ height: 52, width: 150, marginLeft: 20 }}
+                            >
+                                Найти
+                            </Button>
+                        </form>
+                    )}
+                </Formik>
             </ToolbarTitle>
             <Spacer />
-            <div>
-                {numSelected > 0 && (
-                    <Tooltip title="Delete">
-                        <IconButton aria-label="Delete">
-                            <ArchiveIcon />
-                        </IconButton>
-                    </Tooltip>
-                )}
-            </div>
         </Toolbar>
     );
 };
 
 function EnhancedTable() {
+    const dispatch = useDispatch();
     const [order, setOrder] = React.useState<"desc" | "asc">("asc");
     const [orderBy, setOrderBy] = React.useState("customer");
     const [selected, setSelected] = React.useState<Array<string>>([]);
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    const { students } = useSelector((state: RootState) => state.person);
+    const getData = () => {
+        dispatch(getStudents());
+    };
+
+    useEffect(() => {
+        getData()
+    }, []);
 
     const handleRequestSort = (event: any, property: string) => {
         const isAsc = orderBy === property && order === "asc";
@@ -278,34 +308,11 @@ function EnhancedTable() {
 
     const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.checked) {
-            const newSelecteds: Array<string> = rows.map((n: RowType) => n.id);
+            const newSelecteds: any = students.map((n: RowType) => n.uuid);
             setSelected(newSelecteds);
             return;
         }
         setSelected([]);
-    };
-
-    const handleClick = (
-        event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-        id: string
-    ) => {
-        const selectedIndex = selected.indexOf(id);
-        let newSelected: Array<string> = [];
-
-        if (selectedIndex === -1) {
-            newSelected = newSelected.concat(selected, id);
-        } else if (selectedIndex === 0) {
-            newSelected = newSelected.concat(selected.slice(1));
-        } else if (selectedIndex === selected.length - 1) {
-            newSelected = newSelected.concat(selected.slice(0, -1));
-        } else if (selectedIndex > 0) {
-            newSelected = newSelected.concat(
-                selected.slice(0, selectedIndex),
-                selected.slice(selectedIndex + 1)
-            );
-        }
-
-        setSelected(newSelected);
     };
 
     const handleChangePage = (
@@ -325,7 +332,7 @@ function EnhancedTable() {
     const isSelected = (id: string) => selected.indexOf(id) !== -1;
 
     const emptyRows =
-        rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+        rowsPerPage - Math.min(rowsPerPage, students.length - page * rowsPerPage);
 
     return (
         <div>
@@ -343,13 +350,13 @@ function EnhancedTable() {
                             orderBy={orderBy}
                             onSelectAllClick={handleSelectAllClick}
                             onRequestSort={handleRequestSort}
-                            rowCount={rows.length}
+                            rowCount={students.length}
                         />
                         <TableBody>
-                            {stableSort(rows, getComparator(order, orderBy))
+                            {stableSort(students, getComparator(order, orderBy))
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((row, index) => {
-                                    const isItemSelected = isSelected(row.id);
+                                .map((row: any, index: any) => {
+                                    const isItemSelected = isSelected(row.uuid);
                                     const labelId = `enhanced-table-checkbox-${index}`;
 
                                     return (
@@ -358,39 +365,46 @@ function EnhancedTable() {
                                             role="checkbox"
                                             aria-checked={isItemSelected}
                                             tabIndex={-1}
-                                            key={`${row.id}-${index}`}
+                                            key={`${row.uuid}-${index}`}
                                             selected={isItemSelected}
                                         >
-                                            <TableCell padding="checkbox">
-                                                <Checkbox
-                                                    checked={isItemSelected}
-                                                    inputProps={{ "aria-labelledby": labelId }}
-                                                    onClick={(event) => handleClick(event, row.id)}
-                                                />
-                                            </TableCell>
-                                            <TableCell component="th" id={labelId} scope="row">
+                                            <TableCell component="th" id={labelId} scope="row" style={{ verticalAlign: 'top' }}>
                                                 <Customer>
-                                                    <Avatar>{row.customerAvatar}</Avatar>
-                                                    <Box ml={3}>
-                                                        {row.customer}
-                                                        <br />
-                                                        {row.customerEmail}
+                                                    <Box ml={3} style={{ padding: '5px 0' }}>
+                                                        {row.lastName} {row.firstName} {row.surName}
                                                     </Box>
                                                 </Customer>
                                             </TableCell>
-                                            <TableCell>{row.teacher}</TableCell>
-                                            <TableCell>{row.theme}</TableCell>
-                                            <TableCell align="right">
-                                                <IconButton aria-label="delete">
-                                                    <ArchiveIcon />
-                                                </IconButton>
-                                                <IconButton
-                                                    aria-label="details"
-                                                    component={NavLink}
-                                                    to="/students/1"
-                                                >
-                                                    <RemoveRedEyeIcon />
-                                                </IconButton>
+                                            {/*<TableCell>{row.teacher}</TableCell>*/}
+                                            <TableCell style={{ verticalAlign: 'top' }}>
+                                                {
+                                                    row.projects.map((project: any, key: number) =>
+                                                        key <= 2 && <div key={key} style={{ padding: '5px 0' }}>
+                                                            <Link component={NavLink} to={`/projects/${project.uuid}`}>{project.title}</Link>
+                                                        </div>
+                                                    )
+                                                }
+                                                {
+                                                    row.projects.length > 3 && <div style={{ marginTop: '20px' }}><Link style={{ color: '#fff' }}>Показать еще</Link></div>
+                                                }
+                                            </TableCell>
+                                            <TableCell style={{ verticalAlign: 'top' }}>
+                                                {
+                                                    row.projects.map((project: any, key: number) => {
+                                                        return key <= 2 && <div key={key} style={{ padding: '5px 0' }}>
+                                                            <Chip
+                                                                    label={`${project.progress}%`}
+                                                                    rgbcolor={project.progress === 100 ? green[500] : project.progress === 0 ? grey[500] : project.progress < 50 ? red[500] : orange[500]}/>
+                                                        </div>
+                                                    })
+                                                }
+                                            </TableCell>
+                                            <TableCell style={{ verticalAlign: 'top' }}>
+                                                {
+                                                    row.projects.map((project: any, key: number) =>
+                                                        key <= 2 && <div key={key} style={{ padding: '5px 0' }}>{project.teacher ? `${project.teacher.lastName} ${project.teacher.firstName} ${project.teacher.surName}` : 'Не назначен'}</div>
+                                                    )
+                                                }
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -406,11 +420,12 @@ function EnhancedTable() {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={rows.length}
+                    count={students.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onChangePage={handleChangePage}
                     onChangeRowsPerPage={handleChangeRowsPerPage}
+                    labelRowsPerPage="Кол-во строк на странице:"
                 />
             </Paper>
         </div>
@@ -419,27 +434,12 @@ function EnhancedTable() {
 
 function Students() {
     return (
-        <React.Fragment>
+        <>
             <Grid justify="space-between" container spacing={10}>
                 <Grid item>
                     <Typography variant="h3" gutterBottom display="inline">
-                        Студенты
+                         Студенты
                     </Typography>
-
-                    <Breadcrumbs aria-label="Breadcrumb" mt={2}>
-                        <Link component={NavLink} exact to="/">
-                            Главная
-                        </Link>
-                        <Typography>Студенты</Typography>
-                    </Breadcrumbs>
-                </Grid>
-                <Grid item>
-                    <div>
-                        <Button variant="contained" color="primary">
-                            <AddIcon />
-                            Добавить
-                        </Button>
-                    </div>
                 </Grid>
             </Grid>
 
@@ -450,7 +450,7 @@ function Students() {
                     <EnhancedTable />
                 </Grid>
             </Grid>
-        </React.Fragment>
+        </>
     );
 }
 

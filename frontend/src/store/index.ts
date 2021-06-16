@@ -14,6 +14,8 @@ import userSlice from "./user/slice";
 import stageSlice from "./stage/slice";
 import projectTypesSlice from "./project-types/slice";
 import taskSlice from "./task/slice";
+import skillSlice from "./skill/slice";
+import themeSlice from "./theme/slice";
 
 const persistConfig = {
     key: "root",
@@ -30,6 +32,8 @@ const rootReducer = combineReducers({
     stage: stageSlice,
     projectTypes: projectTypesSlice,
     task: taskSlice,
+    skill: skillSlice,
+    theme: themeSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

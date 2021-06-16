@@ -18,6 +18,8 @@ import {useDispatch, useSelector} from "react-redux";
 import {getAllTypes} from "../../store/project-types/slice";
 import API from "../../API/stage";
 import APIType from "../../API/project-types";
+import EditIcon from "@material-ui/icons/Edit";
+import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -56,7 +58,7 @@ function SimpleExpansionPanel() {
     }, []);
 
     return (
-        <Card mb={6}>
+        <Card mb={6} style={{ width: '100%' }}>
             <CardContent>
                 <div>
                     {
@@ -70,9 +72,13 @@ function SimpleExpansionPanel() {
                                     {
                                         type.stages?.map((stage, key) => (
                                             <div key={key}>
-                                                <Typography>
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px' }}>
                                                     {key + 1}. {stage.title}
-                                                </Typography>
+                                                    <div>
+                                                        <EditIcon />
+                                                        <DeleteForeverIcon />
+                                                    </div>
+                                                </div>
                                             </div>
                                         ))
                                     }
@@ -150,7 +156,7 @@ function SimpleExpansionPanel() {
 
 function Types() {
     return (
-        <Grid container spacing={6}>
+        <Grid container spacing={6} style={{ width: '100%' }}>
             <SimpleExpansionPanel />
         </Grid>
     );

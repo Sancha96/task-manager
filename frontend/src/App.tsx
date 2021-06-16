@@ -69,7 +69,8 @@ const Routes = () => {
 }
 
 const App: FC = () => {
-    const theme = THEMES.DARK;
+    const theme = useSelector((state: any) => state.theme.theme);
+
     return (
       <StylesProvider injectFirst>
           <MuiPickersUtilsProvider utils={DateFnsUtils}>

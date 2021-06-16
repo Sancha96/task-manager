@@ -46,6 +46,7 @@ import {useDispatch, useSelector} from "react-redux";
 import {RootState} from "../store";
 import {getStudents, getTeachers} from "../store/person/slice";
 import {getAllTypes} from "../store/project-types/slice";
+import {getSkills} from "../store/skill/slice";
 
 const Divider = styled(MuiDivider)(spacing);
 
@@ -75,16 +76,6 @@ const Customer = styled.div`
   align-items: center;
 `;
 
-function createData(
-    customer: string,
-    customerEmail: string,
-    id: string,
-    projects: any,
-    teacher: string,
-) {
-    return { customer, customerEmail, id, projects, teacher };
-}
-
 const Chip = styled(MuiChip)<{ rgbcolor: string }>`
   height: 20px;
   padding: 4px 0;
@@ -101,52 +92,6 @@ type RowType = {
     projects: any;
     teacher: string;
 };
-const rows: Array<RowType> = [
-    createData(
-        "Андреев Александр Алексеевич",
-        "test@test.test",
-        "000112",
-        [{
-            title: "Построение табулатуры для гитары на основе обработки аудиозаписи",
-            progress: 80
-        }, {
-            title: "hjhkjkjlkjnlkn",
-            progress: 100
-        }],
-        "Ступников А.А",
-    ),
-    createData(
-        "Бабин Евгений Геннадьевич",
-        "test@test.test",
-        "000114",
-        [{
-            title: "Разработка приложения для анализа тренировочного процесса в пулевой стрельбе"
-        }],
-        "Ромазанов А.Р.",
-    ),
-    createData(
-        "Беженарь Александр Васильевич",
-        "test@test.test",
-        "000117",
-        [{
-            title: "Разработка прототипа системы эвакуации из здания",
-            progress: 30
-        }],
-        "Донкова И.А.",
-    ),
-    createData(
-        "Бекасов Никита Александрович",
-        "test@test.test",
-        "000115",
-        [{
-            title: "Разработка сервиса для контроля за соблюдением графиков и схем маршрутов дорожного транспорта",
-            progress: 66,
-        }, {
-            title: "njkhjib hujhujlhul huihu"
-        }],
-        "Гаврилова Н.М.",
-    ),
-];
 
 function descendingComparator(a: RowType, b: RowType, orderBy: string) {
     if (b[orderBy] < a[orderBy]) {
@@ -187,9 +132,10 @@ type HeadCell = {
     disablePadding?: boolean;
 };
 const headCells: Array<HeadCell> = [
-    { id: "customer", alignment: "left", label: "Студент" },
+    { id: "lastName", alignment: "left", label: "Студент" },
     { id: "projects", alignment: "left", label: "Проекты" },
     { id: "progress", alignment: "left", label: "Прогресс" },
+    { id: "teacher", alignment: "left", label: "Преподаватель" },
 ];
 
 type EnhancedTableHeadPropsType = {
@@ -202,11 +148,8 @@ type EnhancedTableHeadPropsType = {
 };
 const EnhancedTableHead: React.FC<EnhancedTableHeadPropsType> = (props) => {
     const {
-        onSelectAllClick,
         order,
         orderBy,
-        numSelected,
-        rowCount,
         onRequestSort,
     } = props;
     const createSortHandler = (property: string) => (event: any) => {
@@ -239,16 +182,17 @@ const EnhancedTableHead: React.FC<EnhancedTableHeadPropsType> = (props) => {
 
 type EnhancedTableToolbarPropsType = { numSelected: number };
 const EnhancedTableToolbar = (props: EnhancedTableToolbarPropsType) => {
-    const { numSelected } = props;
     const dispatch = useDispatch();
-    const types = useSelector((state: RootState) => state.projectTypes.data)
+    const types = useSelector((state: RootState) => state.projectTypes.data);
+    const skills = useSelector((state: RootState) => state.skill.data);
     const getData = () => {
         dispatch(getAllTypes());
+        dispatch(getSkills());
     };
 
     useEffect(() => {
         getData()
-    }, [])
+    }, []);
 
     return (
         <Toolbar>
@@ -257,13 +201,14 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarPropsType) => {
                     initialValues={{
                         course: "",
                         type: "",
+                        skill: "",
                     }}
                     onSubmit={async (values) => null}
                 >
                     {({ errors, handleChange, handleSubmit, touched, values }) => (
                         <form noValidate onSubmit={handleSubmit} style={{ width: "100%", display: 'flex', justifyContent: "space-between", alignItems: "flex-end" }}>
                             <FormControl fullWidth>
-                                <FormHelperText>Специальность</FormHelperText>
+                                <FormHelperText>Группа</FormHelperText>
                                 <Select
                                     variant="outlined"
                                     id="course"
@@ -302,6 +247,26 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarPropsType) => {
                                 </Select>
                             </FormControl>
 
+                            <FormControl fullWidth style={{ marginLeft: 20 }}>
+                                <FormHelperText>Стэк</FormHelperText>
+                                <Select
+                                    variant="outlined"
+                                    id="skill"
+                                    name="skill"
+                                    value={values.skill}
+                                    onChange={handleChange}
+                                >
+                                    {
+                                        skills?.map((skill: any) =>
+                                            (
+                                                <MenuItem key={skill.uuid} value={skill.uuid}>
+                                                    {skill.title}
+                                                </MenuItem>
+                                            ))
+                                    }
+                                </Select>
+                            </FormControl>
+
                             <Button
                                 type="submit"
                                 variant="contained"
@@ -315,25 +280,25 @@ const EnhancedTableToolbar = (props: EnhancedTableToolbarPropsType) => {
                 </Formik>
             </ToolbarTitle>
             <Spacer />
-            <div>
-                {numSelected > 0 && (
-                    <Tooltip title="Delete">
-                        <IconButton aria-label="Delete">
-                            <ArchiveIcon />
-                        </IconButton>
-                    </Tooltip>
-                )}
-            </div>
         </Toolbar>
     );
 };
 
 function EnhancedTable() {
+    const dispatch = useDispatch();
     const [order, setOrder] = React.useState<"desc" | "asc">("asc");
     const [orderBy, setOrderBy] = React.useState("customer");
     const [selected, setSelected] = React.useState<Array<string>>([]);
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(5);
+    const { students } = useSelector((state: RootState) => state.person);
+    const getData = () => {
+        dispatch(getStudents());
+    };
+
+    useEffect(() => {
+        getData()
+    }, []);
 
     const handleRequestSort = (event: any, property: string) => {
         const isAsc = orderBy === property && order === "asc";
@@ -343,34 +308,11 @@ function EnhancedTable() {
 
     const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.checked) {
-            const newSelecteds: Array<string> = rows.map((n: RowType) => n.id);
+            const newSelecteds: any = students.map((n: RowType) => n.uuid);
             setSelected(newSelecteds);
             return;
         }
         setSelected([]);
-    };
-
-    const handleClick = (
-        event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-        id: string
-    ) => {
-        const selectedIndex = selected.indexOf(id);
-        let newSelected: Array<string> = [];
-
-        if (selectedIndex === -1) {
-            newSelected = newSelected.concat(selected, id);
-        } else if (selectedIndex === 0) {
-            newSelected = newSelected.concat(selected.slice(1));
-        } else if (selectedIndex === selected.length - 1) {
-            newSelected = newSelected.concat(selected.slice(0, -1));
-        } else if (selectedIndex > 0) {
-            newSelected = newSelected.concat(
-                selected.slice(0, selectedIndex),
-                selected.slice(selectedIndex + 1)
-            );
-        }
-
-        setSelected(newSelected);
     };
 
     const handleChangePage = (
@@ -390,7 +332,7 @@ function EnhancedTable() {
     const isSelected = (id: string) => selected.indexOf(id) !== -1;
 
     const emptyRows =
-        rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+        rowsPerPage - Math.min(rowsPerPage, students.length - page * rowsPerPage);
 
     return (
         <div>
@@ -408,13 +350,13 @@ function EnhancedTable() {
                             orderBy={orderBy}
                             onSelectAllClick={handleSelectAllClick}
                             onRequestSort={handleRequestSort}
-                            rowCount={rows.length}
+                            rowCount={students.length}
                         />
                         <TableBody>
-                            {stableSort(rows, getComparator(order, orderBy))
+                            {stableSort(students, getComparator(order, orderBy))
                                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                .map((row, index) => {
-                                    const isItemSelected = isSelected(row.id);
+                                .map((row: any, index: any) => {
+                                    const isItemSelected = isSelected(row.uuid);
                                     const labelId = `enhanced-table-checkbox-${index}`;
 
                                     return (
@@ -423,28 +365,33 @@ function EnhancedTable() {
                                             role="checkbox"
                                             aria-checked={isItemSelected}
                                             tabIndex={-1}
-                                            key={`${row.id}-${index}`}
+                                            key={`${row.uuid}-${index}`}
                                             selected={isItemSelected}
                                         >
-                                            <TableCell component="th" id={labelId} scope="row">
+                                            <TableCell component="th" id={labelId} scope="row" style={{ verticalAlign: 'top' }}>
                                                 <Customer>
                                                     <Box ml={3}>
-                                                        {row.customer}
+                                                        {row.lastName} {row.firstName} {row.surName}
                                                     </Box>
                                                 </Customer>
                                             </TableCell>
                                             {/*<TableCell>{row.teacher}</TableCell>*/}
-                                            <TableCell>
+                                            <TableCell style={{ verticalAlign: 'top' }}>
                                                 {
                                                     row.projects.map((project: any, key: number) =>
-                                                        <div key={key} style={{ padding: '5px 0' }}>{project.title}</div>
+                                                        key <= 2 && <div key={key} style={{ padding: '5px 0' }}>
+                                                            <Link component={NavLink} to={`/projects/${project.uuid}`}>{project.title}</Link>
+                                                        </div>
                                                     )
                                                 }
+                                                {
+                                                    row.projects.length > 3 && <div style={{ marginTop: '20px' }}><Link style={{ color: '#fff' }}>Показать еще</Link></div>
+                                                }
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell style={{ verticalAlign: 'top' }}>
                                                 {
                                                     row.projects.map((project: any, key: number) => {
-                                                        return <div key={key} style={{ padding: '5px 0' }}>
+                                                        return key <= 2 && <div key={key} style={{ padding: '5px 0' }}>
                                                                 {project.progress ? <Chip
                                                                         label={`${project.progress}%`}
                                                                         rgbcolor={project.progress === 100 ? green[500] : project.progress < 50 ? red[500] : orange[500]}/> :
@@ -452,6 +399,13 @@ function EnhancedTable() {
                                                                 }
                                                         </div>
                                                     })
+                                                }
+                                            </TableCell>
+                                            <TableCell style={{ verticalAlign: 'top' }}>
+                                                {
+                                                    row.projects.map((project: any, key: number) =>
+                                                        key <= 2 && <div key={key} style={{ padding: '5px 0' }}>{project.teacher ? `${project.teacher.lastName} ${project.teacher.firstName} ${project.teacher.surName}` : 'Не назначен'}</div>
+                                                    )
                                                 }
                                             </TableCell>
                                         </TableRow>
@@ -468,11 +422,12 @@ function EnhancedTable() {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={rows.length}
+                    count={students.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onChangePage={handleChangePage}
                     onChangeRowsPerPage={handleChangeRowsPerPage}
+                    labelRowsPerPage="Кол-во строк на странице:"
                 />
             </Paper>
         </div>

@@ -389,7 +389,7 @@ const Sidebar: React.FC<RouteComponentProps & SidebarPropsType> = ({
     <Drawer variant="permanent" {...rest}>
       <Brand component={NavLink} to="/" button>
         <Box ml={1}>
-          Task manager <BrandChip label="v1.0.0" />
+          Тайм-трекер <BrandChip label="v1.0.0" />
         </Box>
       </Brand>
       <Scrollbar>

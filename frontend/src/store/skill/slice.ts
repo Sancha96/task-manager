@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppThunk } from "../index";
 import {ProjectState, DataType} from "./interfaces";
-import API from "../../API/stage";
+import API from "../../API/skill";
 
-const stageSlice = createSlice({
-    name: "stage",
+const skillSlice = createSlice({
+    name: "skill",
     initialState: {
         data: [],
         item: null,
@@ -30,40 +30,23 @@ const stageSlice = createSlice({
     },
 });
 
-export default stageSlice.reducer;
+export default skillSlice.reducer;
 export const {
     setItem,
     setData,
     changeIsLoading,
     changeError,
-} = stageSlice.actions;
+} = skillSlice.actions;
 
-export const getStagesByTypeId = (id: any): AppThunk => async (
+export const getSkills = (): AppThunk => async (
     dispatch
 ) => {
     dispatch(changeIsLoading(true));
 
     try {
-        const { data } = await API.getStagesByTypeId(id);
+        const { data } = await API.getSkills();
 
         dispatch(setData(data));
-        dispatch(changeError(""));
-        dispatch(changeIsLoading(false));
-    } catch (e) {
-        dispatch(changeError("Ошибка получения данных"));
-        dispatch(changeIsLoading(false));
-    }
-};
-
-export const getStageById = (id: any): AppThunk => async (
-    dispatch
-) => {
-    dispatch(changeIsLoading(true));
-
-    try {
-        const { data } = await API.getStageById(id);
-
-        dispatch(setItem(data));
         dispatch(changeError(""));
         dispatch(changeIsLoading(false));
     } catch (e) {

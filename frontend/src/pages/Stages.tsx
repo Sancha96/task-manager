@@ -28,9 +28,8 @@ import {getStagesByTypeId} from "../store/stage/slice";
 import {RootState} from "../store";
 import {getProjectById} from "../store/project/slice";
 import {Routes} from "../constants/links";
-import {getTasks} from "../store/task/slice";
 import API from "../API/task";
-import task from "../API/task";
+import {join} from "./admin/Students";
 
 const Card = styled(MuiCard)(spacing);
 
@@ -96,15 +95,13 @@ function SimpleList() {
 
     const formattedTasks = useMemo(() => tasks && getFormattedTasks(tasks), [tasks]);
 
-    console.log(formattedTasks);
-
     return (
         <Card mb={6}>
             <List component="nav">
                 {
                     filteredStages.map((stage: any) => {
                         const percent = formattedTasks && formattedTasks[stage.uuid] ?
-                            100 * formattedTasks[stage.uuid].filter((task: any) => task.isConfirmed)?.length / formattedTasks[stage.uuid].length :
+                            Number((100 * formattedTasks[stage.uuid].filter((task: any) => task.isConfirmed)?.length / formattedTasks[stage.uuid].length).toFixed()) :
                             0;
                         return <ListItem key={stage.uuid} button onClick={() => history.push(`${Routes.Projects}/${projectId}/${stage.uuid}`)}>
                             <ListItemIcon onClick={e => e.stopPropagation()} style={{ padding: "0 10px", color: grey[500] }}>
@@ -115,7 +112,7 @@ function SimpleList() {
                                 }
                             </ListItemIcon>
                             <ListItemText primary={stage.title} />
-                            <ListItemSecondaryAction>{stage.endDate}</ListItemSecondaryAction>
+                            <ListItemSecondaryAction>{stage.endDate && join(stage.endDate)}</ListItemSecondaryAction>
                         </ListItem>
                     })
                 }

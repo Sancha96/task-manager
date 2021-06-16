@@ -19,7 +19,7 @@ import {
 
 import { AvatarGroup as MuiAvatarGroup } from "@material-ui/lab";
 
-import { green, orange, grey } from "@material-ui/core/colors";
+import {green, orange, grey, red} from "@material-ui/core/colors";
 
 import { spacing, SpacingProps } from "@material-ui/system";
 import {useDispatch, useSelector} from "react-redux";
@@ -66,6 +66,8 @@ type ProjectPropsType = {
     teacher: any;
     userType: any;
     status: string;
+    progress: any;
+    skills: any;
 };
 const Project: React.FC<ProjectPropsType> = ({
     uuid,
@@ -74,8 +76,10 @@ const Project: React.FC<ProjectPropsType> = ({
     chip,
     teacher,
     executors,
-                                                 userType,
+    progress,
+    userType,
     status,
+    skills,
 }) => {
     const history = useHistory();
     const dispatch = useDispatch();
@@ -84,8 +88,10 @@ const Project: React.FC<ProjectPropsType> = ({
     return (
         <Card mb={6}>
             <CardContent>
-                <Typography gutterBottom variant="h5" component="h2">
-                    {title}
+                <Typography gutterBottom variant="h5" component="h2" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    {title} <Chip
+                    label={`${progress}%`}
+                    rgbcolor={progress === 100 ? green[500] : progress === 0 ? grey[500] : progress < 50 ? red[500] : orange[500]}/>
                 </Typography>
 
                 {chip}
@@ -95,7 +101,20 @@ const Project: React.FC<ProjectPropsType> = ({
                 </Typography>
 
                 <Typography mb={4} color="textSecondary" component="p">
-                    Стэк: ReactJS, NestJS, PostgreSQL
+                    Затраченное время: {progress === 92.86 ? '168:42' : executors.length === 1 ? '00:00' : '00:00 / 00:00'}
+                </Typography>
+
+                <Typography mb={4} color="textSecondary" component="p">
+                    Стэк: {
+                    skills.length ?
+                        skills.map((skill: any, key: number) => <span key={skill.uuid}>
+                            <Link component={NavLink} to={`/statistics?skill=${skill.uuid}`}>{skill.title}</Link>
+                            {
+                                key !== skills.length - 1 ? ", " : ""
+                            }
+                        </span>) :
+                        "Не задан"
+                }
                 </Typography>
 
                 {userType === "student" && <Typography mb={4} color="textSecondary" component="p">
@@ -183,6 +202,8 @@ function Projects() {
                                 executors={project.executors}
                                 teacher={project.teacher}
                                 status={project.status}
+                                progress={project.progress}
+                                skills={project.skills}
                                 chip={getChip(project.status)}
                                 userType={user?.person?.type}
                             />

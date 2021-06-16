@@ -1,9 +1,11 @@
-import {useDispatch} from "react-redux";
 import React, {useState} from "react";
 import {Box, Divider as MuiDivider, Tab, Tabs, Typography as MuiTypography} from "@material-ui/core";
 import {spacing} from "@material-ui/system";
 import styled from "styled-components/macro";
 import Types from "./admin/Types";
+import Technologies from "./admin/Technologies";
+import Students from "./admin/Students";
+import Teachers from "./admin/Teachers";
 
 const Typography = styled(MuiTypography)(spacing);
 
@@ -30,7 +32,6 @@ function TabPanel(props) {
 }
 
 function Admin() {
-    const dispatch = useDispatch();
     const [value, setValue] = useState(0);
 
     const handleChange = (event, newValue) => {
@@ -49,10 +50,25 @@ function Admin() {
 
             <Tabs value={value} onChange={handleChange}>
                 <Tab label="Типы и этапы" />
+                <Tab label="Технологии" />
+                <Tab label="Студенты" />
+                <Tab label="Преподаватели" />
             </Tabs>
 
             <TabPanel value={value} index={0}>
                 <Types />
+            </TabPanel>
+
+            <TabPanel value={value} index={1}>
+                <Technologies />
+            </TabPanel>
+
+            <TabPanel value={value} index={2}>
+                <Students />
+            </TabPanel>
+
+            <TabPanel value={value} index={3}>
+                <Teachers />
             </TabPanel>
         </>
     );

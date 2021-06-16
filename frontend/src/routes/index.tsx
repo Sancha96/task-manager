@@ -114,7 +114,6 @@ export const dashboardLayoutRoutes = [
     pagesRoutes,
     projectsRoutes,
     studentsRoutes,
-    statisticsRoutes,
 ];
 
 // Routes using the Auth layout
@@ -125,5 +124,4 @@ export const sidebarRoutes = [
     pagesRoutes,
     projectsRoutes,
     studentsRoutes,
-    statisticsRoutes,
 ];

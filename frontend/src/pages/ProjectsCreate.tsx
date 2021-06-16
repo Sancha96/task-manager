@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo} from "react";
+import React, {useEffect} from "react";
 import styled from "styled-components/macro";
 import { NavLink, useHistory } from "react-router-dom";
 
@@ -8,7 +8,6 @@ import {
     Divider as MuiDivider, FormControl,
     FormHelperText,
     Grid,
-    InputLabel,
     Link, MenuItem, Select,
     Typography as MuiTypography,
 } from "@material-ui/core";
@@ -24,6 +23,7 @@ import {Formik} from "formik";
 import {getStudents, getTeachers} from "../store/person/slice";
 import {RootState} from "../store";
 import {getAllTypes} from "../store/project-types/slice";
+import {getSkills} from "../store/skill/slice";
 
 const Breadcrumbs = styled(MuiBreadcrumbs)(spacing);
 
@@ -38,11 +38,13 @@ function ProjectsCreate() {
     const history = useHistory();
     const dispatch = useDispatch();
     const { students, teachers } = useSelector((state: RootState) => state.person)
-    const types = useSelector((state: RootState) => state.projectTypes.data)
+    const types = useSelector((state: RootState) => state.projectTypes.data);
+    const skills = useSelector((state: RootState) => state.skill.data);
     const getData = () => {
         dispatch(getStudents());
         dispatch(getTeachers());
         dispatch(getAllTypes());
+        dispatch(getSkills());
     }
 
     useEffect(() => {
@@ -59,9 +61,6 @@ function ProjectsCreate() {
 
             <Breadcrumbs aria-label="Breadcrumb" mt={2}>
                 <Link component={NavLink} exact to="/">
-                    Главная
-                </Link>
-                <Link component={NavLink} exact to="/">
                     Проекты
                 </Link>
                 <Typography>Создание</Typography>
@@ -75,17 +74,16 @@ function ProjectsCreate() {
                         title: "",
                         description: "",
                         executors: [],
+                        skills: [],
                         teacher: "",
                         type: "",
-                        error: ""
-
+                        error: "",
                     }}
                     validationSchema={Yup.object().shape({
                         title: Yup.string().required("Это обязательное поле"),
                         // executors: Yup.string().required("Это обязательное поле"),
                     })}
                     onSubmit={async (values) => {
-                        console.log(values)
                         await dispatch(createProject(values));
                         history.push(Routes.Projects)
                     }}
@@ -113,7 +111,7 @@ function ProjectsCreate() {
                                 />
                             </FormControl>
                             <FormControl margin="normal" fullWidth>
-                                <FormHelperText>Студенты</FormHelperText>
+                                <FormHelperText>Исполнители</FormHelperText>
                                 <Select
                                     variant="outlined"
                                     fullWidth
@@ -127,7 +125,7 @@ function ProjectsCreate() {
                                         students?.map((student: any) =>
                                             (
                                                 <MenuItem key={student.uuid} value={student.uuid}>
-                                                    {`${student.firstName} ${student.lastName}`}
+                                                    {`${student.lastName} ${student.firstName} ${student.surName}`}
                                                 </MenuItem>
                                             ))
                                     }
@@ -148,7 +146,7 @@ function ProjectsCreate() {
                                         teachers?.map((teacher: any) =>
                                             (
                                                 <MenuItem key={teacher.uuid} value={teacher.uuid}>
-                                                    {`${teacher.firstName} ${teacher.lastName}`}
+                                                   {`${teacher.lastName} ${teacher.firstName} ${teacher.surName}`}
                                                 </MenuItem>
                                             ))
                                     }
@@ -170,6 +168,28 @@ function ProjectsCreate() {
                                             (
                                                 <MenuItem key={type.uuid} value={type.uuid}>
                                                     {type.title}
+                                                </MenuItem>
+                                            ))
+                                    }
+                                </Select>
+                            </FormControl>
+
+                            <FormControl margin="normal" fullWidth>
+                                <FormHelperText>Стэк</FormHelperText>
+                                <Select
+                                    variant="outlined"
+                                    fullWidth
+                                    id="skills"
+                                    name="skills"
+                                    multiple
+                                    value={values.skills}
+                                    onChange={handleChange}
+                                >
+                                    {
+                                        skills?.map((skill: any) =>
+                                            (
+                                                <MenuItem key={skill.uuid} value={skill.uuid}>
+                                                    {skill.title}
                                                 </MenuItem>
                                             ))
                                     }
